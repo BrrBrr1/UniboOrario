@@ -1,0 +1,36 @@
+import React from 'react';
+import { format, isSameDay, parseISO } from 'date-fns';
+import { it } from 'date-fns/locale';
+import EventCard from './EventCard';
+
+const DayColumn = ({ date, events }) => {
+    const dayEvents = events.filter(event => {
+        const eventDate = parseISO(event.start);
+        return isSameDay(eventDate, date);
+    }).sort((a, b) => parseISO(a.start) - parseISO(b.start));
+
+    const isToday = isSameDay(date, new Date());
+
+    return (
+        <div className={`day-column ${isToday ? 'today' : ''}`}>
+            <div className="day-header">
+                <span className="day-name">{format(date, 'EEEE', { locale: it })}</span>
+                <div className="day-date-info">
+                    <span className="day-number">{format(date, 'd')}</span>
+                    <span className="day-month">{format(date, 'MMM', { locale: it })}</span>
+                </div>
+            </div>
+            <div className="events-container">
+                {dayEvents.length > 0 ? (
+                    dayEvents.map((event, index) => (
+                        <EventCard key={`${event.cod_modulo}-${index}`} event={event} />
+                    ))
+                ) : (
+                    <div className="no-events">Nessuna lezione</div>
+                )}
+            </div>
+        </div>
+    );
+};
+
+export default DayColumn;
