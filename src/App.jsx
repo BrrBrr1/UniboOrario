@@ -8,16 +8,19 @@ import ViewToggle from './components/ViewToggle';
 import DayTabs from './components/DayTabs';
 import LoadingSkeleton from './components/LoadingSkeleton';
 import OnlineStatus from './components/OnlineStatus';
+import LessonFilter from './components/LessonFilter';
 import { fetchTimetable } from './services/api';
 import SettingsModal from './components/SettingsModal';
 import './index.css';
 
 // Base URL and params from user request
-const BASE_URL = 'https://corsi.unibo.it/laurea/ScienzeComunicazione/orario-lezioni/@@orario_reale_json';
-const STATIC_PARAMS = 'anno=1&curricula=';
+const BASE_URL = 'https://corsi.unibo.it/laurea/LingueTecnologieComunicazioneInterculturale/orario-lezioni/@@orario_reale_json';
+const STATIC_PARAMS = 'anno=1&curricula=C60-000';
 
 function App() {
   const [events, setEvents] = useState([]);
+  const [availableLessons, setAvailableLessons] = useState([]);
+  const [selectedLessons, setSelectedLessons] = useState([]);
   const [currentDate, setCurrentDate] = useState(new Date('2025-11-24')); // Start from the new link's date
   const [filter, setFilter] = useState('');
   const [filterType, setFilterType] = useState('title'); // 'title', 'teacher', 'location'
@@ -73,6 +76,26 @@ function App() {
       console.log('Fetching URL:', url); // For debugging
 
       const data = await fetchTimetable(url);
+
+      // Extract unique lessons
+      const uniqueLessonsMap = new Map();
+      data.forEach(event => {
+        if (!uniqueLessonsMap.has(event.cod_modulo)) {
+          uniqueLessonsMap.set(event.cod_modulo, {
+            cod_modulo: event.cod_modulo,
+            title: event.title
+          });
+        }
+      });
+      const uniqueLessons = Array.from(uniqueLessonsMap.values());
+
+      setAvailableLessons(uniqueLessons);
+
+      // If no lessons are selected yet, select all by default
+      if (selectedLessons.length === 0) {
+        setSelectedLessons(uniqueLessons.map(l => l.cod_modulo));
+      }
+
       setEvents(data);
       setLoading(false);
     };
@@ -164,6 +187,12 @@ function App() {
 
   // Advanced filter logic
   const filteredEvents = events.filter(event => {
+    // First, filter by selected lessons
+    if (!selectedLessons.includes(event.cod_modulo)) {
+      return false;
+    }
+
+    // Then apply search filter
     if (!filter) return true;
 
     const searchLower = filter.toLowerCase();
@@ -190,6 +219,13 @@ function App() {
             <WeekNavigator currentDate={currentDate} onDateChange={handleDateChange} />
             <ViewToggle viewMode={viewMode} onViewChange={handleViewModeChange} />
           </div>
+
+          <LessonFilter
+            lessons={availableLessons}
+            selectedLessons={selectedLessons}
+            onSelectionChange={setSelectedLessons}
+          />
+
           <CourseFilter
             filter={filter}
             onFilterChange={setFilter}
