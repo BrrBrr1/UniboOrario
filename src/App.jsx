@@ -7,26 +7,35 @@ import CourseFilter from './components/CourseFilter';
 import ViewToggle from './components/ViewToggle';
 import DayTabs from './components/DayTabs';
 import LoadingSkeleton from './components/LoadingSkeleton';
-import OnlineStatus from './components/OnlineStatus';
 import LessonFilter from './components/LessonFilter';
 import { fetchTimetable } from './services/api';
 import SettingsModal from './components/SettingsModal';
+import useLocalStorage from './hooks/useLocalStorage';
+import { NotificationProvider } from './context/NotificationContext';
+import NotificationContainer from './components/NotificationContainer';
+import useNetworkStatus from './hooks/useNetworkStatus';
+import usePWAUpdate from './hooks/usePWAUpdate';
 import './index.css';
 
 // Base URL and params from user request
 const BASE_URL = 'https://corsi.unibo.it/laurea/LingueTecnologieComunicazioneInterculturale/orario-lezioni/@@orario_reale_json';
 const STATIC_PARAMS = 'anno=1&curricula=C60-000';
 
-function App() {
+function AppContent() {
   const [events, setEvents] = useState([]);
   const [availableLessons, setAvailableLessons] = useState([]);
-  const [selectedLessons, setSelectedLessons] = useState([]);
+  // Use localStorage for preferences
+  const [selectedLessons, setSelectedLessons] = useLocalStorage('preference_selectedLessons', null);
   const [currentDate, setCurrentDate] = useState(new Date('2025-11-24')); // Start from the new link's date
-  const [filter, setFilter] = useState('');
-  const [filterType, setFilterType] = useState('title'); // 'title', 'teacher', 'location'
+  const [filter, setFilter] = useLocalStorage('preference_filter', '');
+  const [filterType, setFilterType] = useLocalStorage('preference_filterType', 'title'); // 'title', 'teacher', 'location'
   const [loading, setLoading] = useState(true);
-  const [viewMode, setViewMode] = useState('week'); // 'week' or 'day'
+  const [viewMode, setViewMode] = useLocalStorage('preference_viewMode', 'week'); // 'week' or 'day'
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
+  // Initialize hooks for notifications
+  useNetworkStatus();
+  usePWAUpdate();
 
   // Initialize theme from localStorage or system preference
   const [theme, setTheme] = useState(() => {
@@ -91,8 +100,8 @@ function App() {
 
       setAvailableLessons(uniqueLessons);
 
-      // If no lessons are selected yet, select all by default
-      if (selectedLessons.length === 0) {
+      // If no lessons are selected yet (first visit), select all by default
+      if (selectedLessons === null) {
         setSelectedLessons(uniqueLessons.map(l => l.cod_modulo));
       }
 
@@ -188,7 +197,7 @@ function App() {
   // Advanced filter logic
   const filteredEvents = events.filter(event => {
     // First, filter by selected lessons
-    if (!selectedLessons.includes(event.cod_modulo)) {
+    if (selectedLessons && !selectedLessons.includes(event.cod_modulo)) {
       return false;
     }
 
@@ -212,6 +221,7 @@ function App() {
   return (
     <div className="app-container">
       <Header onOpenSettings={() => setIsSettingsOpen(true)} />
+      <NotificationContainer />
 
       <main className="main-content">
         <div className="controls-section">
@@ -222,7 +232,7 @@ function App() {
 
           <LessonFilter
             lessons={availableLessons}
-            selectedLessons={selectedLessons}
+            selectedLessons={selectedLessons || []}
             onSelectionChange={setSelectedLessons}
           />
 
@@ -267,9 +277,15 @@ function App() {
         theme={theme}
         onThemeChange={setTheme}
       />
-
-      <OnlineStatus />
     </div>
+  );
+}
+
+function App() {
+  return (
+    <NotificationProvider>
+      <AppContent />
+    </NotificationProvider>
   );
 }
 

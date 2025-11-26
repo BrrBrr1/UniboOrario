@@ -1,0 +1,26 @@
+/* Notification Container */
+.notification-container {
+    position: fixed;
+    top: 0;
+    right: 0;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 12px;
+    pointer-events: none;
+    padding: 16px 20px;
+    isolation: isolate;
+}
+
+@media (max-width: 768px) {
+    .notification-container {
+        left: 0;
+        align-items: center;
+        padding: 12px;
+    }
+
+    .notification-toast {
+        max-width: 100%;
+    }
+}

@@ -736,6 +736,7 @@ body {
 .status-dot.offline {
   background-color: #ff5252;
 }
+
 /* Lesson Filter Styles */
 .lesson-filter-container {
   position: relative;
@@ -768,18 +769,22 @@ body {
 }
 
 .filter-badge {
-  background-color: var(--text-main);
-  color: var(--card-bg);
-  font-size: 0.75rem;
-  padding: 0.1rem 0.4rem;
-  border-radius: 12px;
-  min-width: 20px;
+  background-color: var(--primary-color);
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.2rem 0.6rem;
+  border-radius: 16px;
+  min-width: 32px;
   text-align: center;
+  letter-spacing: 0.02em;
+  box-shadow: 0 2px 4px rgba(187, 46, 41, 0.15);
 }
 
 .lesson-filter-button.active .filter-badge {
-  background-color: white;
+  background-color: rgba(255, 255, 255, 0.95);
   color: var(--primary-color);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
 .lesson-dropdown {
@@ -798,8 +803,15 @@ body {
 }
 
 @keyframes slideDown {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .dropdown-header {
@@ -859,7 +871,7 @@ body {
   flex-shrink: 0;
 }
 
-.checkbox-item input:checked + .checkbox-custom {
+.checkbox-item input:checked+.checkbox-custom {
   background-color: var(--primary-color);
   border-color: var(--primary-color);
   color: white;
@@ -872,4 +884,3 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-
