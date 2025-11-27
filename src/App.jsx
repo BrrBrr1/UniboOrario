@@ -33,6 +33,13 @@ function AppContent() {
   const [viewMode, setViewMode] = useLocalStorage('preference_viewMode', 'week'); // 'week' or 'day'
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
+  // Additional settings
+  const [compactView, setCompactView] = useLocalStorage('preference_compactView', false);
+  const [use24Hour, setUse24Hour] = useLocalStorage('preference_use24Hour', true);
+  const [showWeekends, setShowWeekends] = useLocalStorage('preference_showWeekends', false);
+  const [notificationsEnabled, setNotificationsEnabled] = useLocalStorage('preference_notifications', true);
+  const [autoRefresh, setAutoRefresh] = useLocalStorage('preference_autoRefresh', false);
+
   // Initialize hooks for notifications
   useNetworkStatus();
   usePWAUpdate();
@@ -111,8 +118,21 @@ function AppContent() {
     loadData();
   }, [currentDate]);
 
+  // Auto-refresh functionality
+  useEffect(() => {
+    if (!autoRefresh) return;
+
+    const intervalId = setInterval(() => {
+      console.log('Auto-refreshing timetable data...');
+      setCurrentDate(prev => new Date(prev)); // Trigger reload by updating the date object
+    }, 60 * 60 * 1000); // Refresh every hour
+
+    return () => clearInterval(intervalId);
+  }, [autoRefresh]);
+
   const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
-  const weekDays = Array.from({ length: 5 }, (_, i) => addDays(weekStart, i)); // Mon-Fri
+  // Show weekends if enabled, otherwise Mon-Fri only
+  const weekDays = Array.from({ length: showWeekends ? 7 : 5 }, (_, i) => addDays(weekStart, i));
 
   // Navigation handlers
   const handleDateChange = (newDate) => {
@@ -156,11 +176,16 @@ function AppContent() {
         case '1':
         case '2':
         case '3':
-        case '4':
         case '5':
-          // Jump to specific day (Mon-Fri)
+        case '6':
+        case '7':
+          // Jump to specific day (Mon-Fri, or Mon-Sun if weekends enabled)
           if (viewMode === 'day') {
             const dayIndex = parseInt(e.key) - 1;
+
+            // Only allow navigation to weekends if enabled
+            if (dayIndex >= 5 && !showWeekends) return;
+
             const currentWeekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
             const newDate = addDays(currentWeekStart, dayIndex);
             setCurrentDate(newDate);
@@ -242,9 +267,12 @@ function AppContent() {
             filterType={filterType}
             onFilterTypeChange={setFilterType}
           />
-
           {viewMode === 'day' && (
-            <DayTabs currentDate={currentDate} onDateChange={handleDateChange} />
+            <DayTabs
+              currentDate={currentDate}
+              onDateChange={handleDateChange}
+              showWeekends={showWeekends}
+            />
           )}
         </div>
 
@@ -258,6 +286,8 @@ function AppContent() {
                   key={day.toISOString()}
                   date={day}
                   events={filteredEvents}
+                  compactView={compactView}
+                  use24Hour={use24Hour}
                 />
               ))
             ) : (
@@ -265,6 +295,8 @@ function AppContent() {
                 key={currentDate.toISOString()}
                 date={currentDate}
                 events={filteredEvents}
+                compactView={compactView}
+                use24Hour={use24Hour}
               />
             )}
           </div>
@@ -276,6 +308,16 @@ function AppContent() {
         onClose={() => setIsSettingsOpen(false)}
         theme={theme}
         onThemeChange={setTheme}
+        compactView={compactView}
+        onCompactViewChange={setCompactView}
+        use24Hour={use24Hour}
+        onUse24HourChange={setUse24Hour}
+        showWeekends={showWeekends}
+        onShowWeekendsChange={setShowWeekends}
+        notificationsEnabled={notificationsEnabled}
+        onNotificationsChange={setNotificationsEnabled}
+        autoRefresh={autoRefresh}
+        onAutoRefreshChange={setAutoRefresh}
       />
     </div>
   );

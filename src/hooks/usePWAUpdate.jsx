@@ -18,19 +18,33 @@ const usePWAUpdate = () => {
 
     useEffect(() => {
         if (needRefresh) {
+            // Notify user
             addNotification(
-                'update',
-                <div className="flex flex-col gap-2">
-                    <span>Nuova versione disponibile!</span>
-                    <button
-                        onClick={() => updateServiceWorker(true)}
-                        className="bg-white text-blue-600 px-3 py-1 rounded text-xs font-bold uppercase tracking-wide hover:bg-blue-50 transition-colors self-start"
-                    >
-                        Aggiorna ora
-                    </button>
-                </div>,
-                0 // Persistent until clicked
+                'info',
+                'Nuova versione trovata. Aggiornamento in corso...',
+                5000
             );
+
+            const performUpdate = async () => {
+                // Wait for user to read notification
+                await new Promise(resolve => setTimeout(resolve, 3000));
+
+                // Clear caches (but NOT localStorage)
+                if ('caches' in window) {
+                    try {
+                        const keys = await caches.keys();
+                        await Promise.all(keys.map(key => caches.delete(key)));
+                        console.log('Caches cleared');
+                    } catch (err) {
+                        console.error('Error clearing caches:', err);
+                    }
+                }
+
+                // Trigger update and reload
+                updateServiceWorker(true);
+            };
+
+            performUpdate();
         }
     }, [needRefresh, addNotification, updateServiceWorker]);
 };

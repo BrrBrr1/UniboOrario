@@ -1,16 +1,20 @@
 import React from 'react';
 import { MapPin, Clock, User, Calendar } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { formatTime } from '../utils/timeFormat';
 
-const EventCard = ({ event }) => {
+const EventCard = ({ event, compactView = false, use24Hour = true }) => {
     // Extract relevant info
     const { title, time, aule, docente, start, end } = event;
     const location = aule?.[0]?.des_risorsa || 'Unknown Location';
     const address = aule?.[0]?.des_indirizzo || '';
 
+    // Format time based on user preference
+    const displayTime = formatTime(time, use24Hour);
+
     return (
         <motion.div
-            className="event-card"
+            className={`event-card ${compactView ? 'compact' : ''}`}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             initial={{ opacity: 0, y: 10 }}
@@ -20,7 +24,7 @@ const EventCard = ({ event }) => {
             <div className="event-header">
                 <div className="event-time">
                     <Clock size={14} />
-                    <span>{time}</span>
+                    <span>{displayTime}</span>
                 </div>
             </div>
             <h3 className="event-title">{title}</h3>

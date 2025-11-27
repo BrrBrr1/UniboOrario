@@ -3,9 +3,9 @@ import { format, isSameDay, startOfWeek, addDays } from 'date-fns';
 import { it } from 'date-fns/locale';
 import useSwipe from '../hooks/useSwipe';
 
-const DayTabs = ({ currentDate, onDateChange }) => {
+const DayTabs = ({ currentDate, onDateChange, showWeekends = false }) => {
     const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
-    const weekDays = Array.from({ length: 5 }, (_, i) => addDays(weekStart, i));
+    const weekDays = Array.from({ length: showWeekends ? 7 : 5 }, (_, i) => addDays(weekStart, i));
 
     // Get current day index in week
     const currentDayIndex = weekDays.findIndex(day => isSameDay(day, currentDate));

@@ -3,7 +3,7 @@ import { format, isSameDay, parseISO } from 'date-fns';
 import { it } from 'date-fns/locale';
 import EventCard from './EventCard';
 
-const DayColumn = ({ date, events }) => {
+const DayColumn = ({ date, events, compactView = false, use24Hour = true }) => {
     const dayEvents = events.filter(event => {
         const eventDate = parseISO(event.start);
         return isSameDay(eventDate, date);
@@ -23,7 +23,12 @@ const DayColumn = ({ date, events }) => {
             <div className="events-container">
                 {dayEvents.length > 0 ? (
                     dayEvents.map((event, index) => (
-                        <EventCard key={`${event.cod_modulo}-${index}`} event={event} />
+                        <EventCard
+                            key={`${event.cod_modulo}-${index}`}
+                            event={event}
+                            compactView={compactView}
+                            use24Hour={use24Hour}
+                        />
                     ))
                 ) : (
                     <div className="no-events">Nessuna lezione</div>
