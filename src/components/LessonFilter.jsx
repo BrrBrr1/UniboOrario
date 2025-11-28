@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ChevronDown, Check, Filter } from 'lucide-react';
 
-const LessonFilter = ({ lessons, selectedLessons, onSelectionChange }) => {
+const LessonFilter = ({ lessons, selectedLessons, onSelectionChange, loading = false }) => {
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef(null);
 
@@ -44,7 +44,9 @@ const LessonFilter = ({ lessons, selectedLessons, onSelectionChange }) => {
                     <span>Filtra lezioni</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <span className="filter-badge">{selectedLessons.length}/{lessons.length}</span>
+                    <span className="filter-badge">
+                        {loading ? '0/0' : `${selectedLessons.length}/${lessons.length}`}
+                    </span>
                     <ChevronDown size={18} style={{
                         transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
                         transition: 'transform 0.2s'

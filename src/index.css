@@ -730,16 +730,86 @@ body {
   }
 }
 
-/* Filter Wrapper */
-.course-filter-wrapper {
+/* Course Filter Input with Dropdown */
+.course-filter {
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  background-color: var(--card-bg);
+  padding: 0.75rem 1rem;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-sm);
+  width: 100%;
   gap: 0.75rem;
+}
+
+.filter-type-dropdown {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.6rem;
+  background-color: var(--bg-color);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+  min-width: fit-content;
+  max-width: 90px;
+}
+
+.filter-type-dropdown:hover {
+  background-color: var(--hover-bg);
+  border-color: var(--text-secondary);
+}
+
+.filter-type-select {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  font-size: 1rem;
+  /* Style the dropdown when opened */
+  background-color: var(--card-bg);
+  color: var(--text-main);
+  border: 1px solid var(--primary-color);
+  border-radius: 8px;
+}
+
+/* Style the dropdown options */
+.filter-type-select option {
+  background-color: var(--card-bg);
+  color: var(--text-main);
+  padding: 0.5rem;
+  font-weight: 500;
+}
+
+.filter-type-select option:hover,
+.filter-type-select option:focus,
+.filter-type-select option:checked {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.dropdown-chevron {
+  color: var(--text-secondary);
+  pointer-events: none;
+}
+
+.filter-type-dropdown svg:first-child {
+  color: var(--primary-color);
+  flex-shrink: 0;
+}
+
+/* Year Selector Styles */
+.year-selector-wrapper {
   width: 100%;
 }
 
-/* Filter Type Tabs (Segmented Control) */
-.filter-type-tabs {
+.year-selector-tabs {
   display: flex;
   gap: 0.5rem;
   background-color: var(--card-bg);
@@ -748,7 +818,7 @@ body {
   box-shadow: var(--shadow-sm);
 }
 
-.filter-tab {
+.year-tab {
   flex: 1;
   display: flex;
   align-items: center;
@@ -766,37 +836,26 @@ body {
   position: relative;
 }
 
-.filter-tab:hover {
+.year-tab:hover {
   background-color: var(--hover-bg);
   color: var(--text-main);
 }
 
-.filter-tab.active {
+.year-tab.active {
   background-color: var(--primary-color);
   color: white;
   box-shadow: 0 2px 8px rgba(255, 56, 56, 0.25);
 }
 
-.filter-tab.active:hover {
+.year-tab.active:hover {
   background-color: var(--primary-color);
   color: white;
 }
 
-.filter-tab svg {
+.year-tab svg {
   flex-shrink: 0;
 }
 
-/* Course Filter Input */
-.course-filter {
-  display: flex;
-  align-items: center;
-  background-color: var(--card-bg);
-  padding: 0.75rem 1rem;
-  border-radius: var(--border-radius);
-  box-shadow: var(--shadow-sm);
-  width: 100%;
-  gap: 0.5rem;
-}
 
 .search-icon {
   color: var(--text-secondary);

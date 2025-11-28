@@ -290,6 +290,7 @@ function AppContent() {
             lessons={availableLessons}
             selectedLessons={selectedLessons || []}
             onSelectionChange={setSelectedLessons}
+            loading={loading}
           />
 
           <CourseFilter

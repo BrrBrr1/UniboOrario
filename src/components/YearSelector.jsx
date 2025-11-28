@@ -10,11 +10,11 @@ const YearSelector = ({ year, onYearChange }) => {
 
     return (
         <div className="year-selector-wrapper">
-            <div className="filter-type-tabs">
+            <div className="year-selector-tabs">
                 {years.map(({ value, label }) => (
                     <button
                         key={value}
-                        className={`filter-tab ${year === value ? 'active' : ''}`}
+                        className={`year-tab ${year === value ? 'active' : ''}`}
                         onClick={() => onYearChange(value)}
                     >
                         <GraduationCap size={16} />
