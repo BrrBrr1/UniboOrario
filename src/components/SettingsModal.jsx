@@ -126,7 +126,6 @@ const SettingsModal = ({
                     </div>*/}
 
                     {/* Auto-refresh */}
-                    {/* Auto-refresh */}
                     <div className="setting-item">
                         <div className="setting-info">
                             <div className="setting-label-row">

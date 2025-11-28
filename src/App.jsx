@@ -6,6 +6,7 @@ import DayColumn from './components/DayColumn';
 import CourseFilter from './components/CourseFilter';
 import ViewToggle from './components/ViewToggle';
 import DayTabs from './components/DayTabs';
+import YearSelector from './components/YearSelector';
 import LoadingSkeleton from './components/LoadingSkeleton';
 import LessonFilter from './components/LessonFilter';
 import { fetchTimetable } from './services/api';
@@ -19,15 +20,43 @@ import './index.css';
 
 // Base URL and params from user request
 const BASE_URL = 'https://corsi.unibo.it/laurea/LingueTecnologieComunicazioneInterculturale/orario-lezioni/@@orario_reale_json';
-const STATIC_PARAMS = 'anno=1&curricula=C60-000';
+// STATIC_PARAMS removed, will be constructed dynamically
 
 function AppContent() {
   const [events, setEvents] = useState([]);
   const [availableLessons, setAvailableLessons] = useState([]);
+
   // Use localStorage for preferences
-  const [selectedLessons, setSelectedLessons] = useLocalStorage('preference_selectedLessons', null);
-  const [currentDate, setCurrentDate] = useState(new Date('2025-11-24')); // Start from the new link's date
+  const [year, setYear] = useLocalStorage('preference_year', 1);
+
+  // Separate storage for each year
+  const [selectedLessonsYear1, setSelectedLessonsYear1] = useLocalStorage('preference_selectedLessons_year_1', null);
+  const [selectedLessonsYear2, setSelectedLessonsYear2] = useLocalStorage('preference_selectedLessons_year_2', null);
+  const [selectedLessonsYear3, setSelectedLessonsYear3] = useLocalStorage('preference_selectedLessons_year_3', null);
+
+  // Dynamic selection based on current year
+  let selectedLessons, setSelectedLessons;
+  if (year === 1) {
+    selectedLessons = selectedLessonsYear1;
+    setSelectedLessons = setSelectedLessonsYear1;
+  } else if (year === 2) {
+    selectedLessons = selectedLessonsYear2;
+    setSelectedLessons = setSelectedLessonsYear2;
+  } else {
+    selectedLessons = selectedLessonsYear3;
+    setSelectedLessons = setSelectedLessonsYear3;
+  }
+  const [currentDate, setCurrentDate] = useState(() => {
+    const savedDate = sessionStorage.getItem('currentDate');
+    return savedDate ? new Date(savedDate) : new Date();
+  });
+
+  // Persist currentDate to sessionStorage
+  useEffect(() => {
+    sessionStorage.setItem('currentDate', currentDate.toISOString());
+  }, [currentDate]);
   const [filter, setFilter] = useLocalStorage('preference_filter', '');
+  // year state moved up
   const [filterType, setFilterType] = useLocalStorage('preference_filterType', 'title'); // 'title', 'teacher', 'location'
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useLocalStorage('preference_viewMode', 'week'); // 'week' or 'day'
@@ -87,7 +116,7 @@ function AppContent() {
       const startStr = format(start, 'yyyy-MM-dd');
       const endStr = format(end, 'yyyy-MM-dd');
 
-      const url = `${BASE_URL}?${STATIC_PARAMS}&start=${startStr}&end=${endStr}`;
+      const url = `${BASE_URL}?anno=${year}&curricula=C60-000&start=${startStr}&end=${endStr}`;
 
       console.log('Fetching URL:', url); // For debugging
 
@@ -116,7 +145,7 @@ function AppContent() {
       setLoading(false);
     };
     loadData();
-  }, [currentDate]);
+  }, [currentDate, year]);
 
   // Auto-refresh functionality
   useEffect(() => {
@@ -254,6 +283,8 @@ function AppContent() {
             <WeekNavigator currentDate={currentDate} onDateChange={handleDateChange} />
             <ViewToggle viewMode={viewMode} onViewChange={handleViewModeChange} />
           </div>
+
+          <YearSelector year={year} onYearChange={setYear} />
 
           <LessonFilter
             lessons={availableLessons}
