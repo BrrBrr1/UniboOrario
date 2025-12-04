@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { format, isSameDay, parseISO } from 'date-fns';
 import { it } from 'date-fns/locale';
+import { CalendarX } from 'lucide-react';
 import EventCard from './EventCard';
 
-const DayColumn = ({ date, events, compactView = false, use24Hour = true }) => {
+const DayColumn = memo(({ date, events, compactView = false, use24Hour = true }) => {
     const dayEvents = events.filter(event => {
         const eventDate = parseISO(event.start);
         return isSameDay(eventDate, date);
@@ -31,11 +32,17 @@ const DayColumn = ({ date, events, compactView = false, use24Hour = true }) => {
                         />
                     ))
                 ) : (
-                    <div className="no-events">Nessuna lezione</div>
+                    <div className="no-events">
+                        <CalendarX className="no-events-icon" size={48} strokeWidth={1.5} />
+                        <span className="no-events-text">Nessuna lezione</span>
+                        <span className="no-events-subtext">Goditi la giornata libera! (Forse)</span>
+                    </div>
                 )}
             </div>
         </div>
     );
-};
+});
+
+DayColumn.displayName = 'DayColumn';
 
 export default DayColumn;

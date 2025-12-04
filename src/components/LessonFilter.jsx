@@ -4,6 +4,7 @@ import { ChevronDown, Check, Filter } from 'lucide-react';
 const LessonFilter = ({ lessons, selectedLessons, onSelectionChange, loading = false }) => {
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef(null);
+    const buttonRef = useRef(null);
 
     // Close dropdown when clicking outside
     useEffect(() => {
@@ -16,6 +17,19 @@ const LessonFilter = ({ lessons, selectedLessons, onSelectionChange, loading = f
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
+
+    // Handle escape key to close dropdown
+    useEffect(() => {
+        const handleEscape = (e) => {
+            if (e.key === 'Escape' && isOpen) {
+                setIsOpen(false);
+                buttonRef.current?.focus();
+            }
+        };
+
+        document.addEventListener('keydown', handleEscape);
+        return () => document.removeEventListener('keydown', handleEscape);
+    }, [isOpen]);
 
     const handleToggle = (lessonId) => {
         if (selectedLessons.includes(lessonId)) {
@@ -33,29 +47,44 @@ const LessonFilter = ({ lessons, selectedLessons, onSelectionChange, loading = f
         onSelectionChange([]);
     };
 
+    const dropdownId = 'lesson-filter-dropdown';
+
     return (
         <div className="lesson-filter-container" ref={dropdownRef}>
             <button
+                ref={buttonRef}
                 className={`lesson-filter-button ${isOpen ? 'active' : ''}`}
                 onClick={() => setIsOpen(!isOpen)}
+                aria-expanded={isOpen}
+                aria-controls={dropdownId}
+                aria-haspopup="listbox"
             >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <Filter size={18} />
+                    <Filter size={18} aria-hidden="true" />
                     <span>Filtra lezioni</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <span className="filter-badge">
+                    <span className="filter-badge" aria-label={`${selectedLessons.length} di ${lessons.length} selezionate`}>
                         {loading ? '0/0' : `${selectedLessons.length}/${lessons.length}`}
                     </span>
-                    <ChevronDown size={18} style={{
-                        transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-                        transition: 'transform 0.2s'
-                    }} />
+                    <ChevronDown
+                        size={18}
+                        aria-hidden="true"
+                        style={{
+                            transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                            transition: 'transform 0.2s'
+                        }}
+                    />
                 </div>
             </button>
 
             {isOpen && (
-                <div className="lesson-dropdown">
+                <div
+                    id={dropdownId}
+                    className="lesson-dropdown"
+                    role="listbox"
+                    aria-label="Seleziona lezioni"
+                >
                     <div className="dropdown-header">
                         <button className="text-btn" onClick={handleSelectAll}>
                             Seleziona tutto
@@ -66,13 +95,19 @@ const LessonFilter = ({ lessons, selectedLessons, onSelectionChange, loading = f
                     </div>
                     <div className="dropdown-list">
                         {lessons.map(lesson => (
-                            <label key={lesson.cod_modulo} className="checkbox-item">
+                            <label
+                                key={lesson.cod_modulo}
+                                className="checkbox-item"
+                                role="option"
+                                aria-selected={selectedLessons.includes(lesson.cod_modulo)}
+                            >
                                 <input
                                     type="checkbox"
                                     checked={selectedLessons.includes(lesson.cod_modulo)}
                                     onChange={() => handleToggle(lesson.cod_modulo)}
+                                    aria-label={lesson.title}
                                 />
-                                <div className="checkbox-custom">
+                                <div className="checkbox-custom" aria-hidden="true">
                                     {selectedLessons.includes(lesson.cod_modulo) && (
                                         <Check size={14} />
                                     )}

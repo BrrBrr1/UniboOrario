@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { addDays, startOfWeek, addWeeks, subWeeks, format, isSameDay } from 'date-fns';
+import React, { useState, useEffect, useCallback } from 'react';
+import { addDays, startOfWeek, addWeeks, subWeeks, format, isSameDay, isSameWeek } from 'date-fns';
 import Header from './components/Header';
 import WeekNavigator from './components/WeekNavigator';
 import DayColumn from './components/DayColumn';
@@ -16,6 +16,8 @@ import { NotificationProvider } from './context/NotificationContext';
 import NotificationContainer from './components/NotificationContainer';
 import useNetworkStatus from './hooks/useNetworkStatus';
 import usePWAUpdate from './hooks/usePWAUpdate';
+import useSwipe from './hooks/useSwipe';
+import { RotateCcw, Calendar } from 'lucide-react';
 import './index.css';
 
 // Base URL and params from user request
@@ -72,6 +74,14 @@ function AppContent() {
   // Initialize hooks for notifications
   useNetworkStatus();
   usePWAUpdate();
+
+  // Pull-to-refresh state
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [pullDistance, setPullDistance] = useState(0);
+  const PULL_THRESHOLD = 80;
+
+  // Check if viewing current week
+  const isCurrentWeek = isSameWeek(currentDate, new Date(), { weekStartsOn: 1 });
 
   // Initialize theme from localStorage or system preference
   const [theme, setTheme] = useState(() => {
@@ -167,6 +177,37 @@ function AppContent() {
   const handleDateChange = (newDate) => {
     setCurrentDate(newDate);
   };
+
+  // Jump to today
+  const handleJumpToToday = () => {
+    setCurrentDate(new Date());
+  };
+
+  // Pull-to-refresh handlers
+  const handleRefresh = useCallback(async () => {
+    setIsRefreshing(true);
+    // Trigger reload by updating the date object
+    setCurrentDate(prev => new Date(prev));
+    // Add a minimum delay for visual feedback
+    await new Promise(resolve => setTimeout(resolve, 500));
+    setIsRefreshing(false);
+    setPullDistance(0);
+  }, []);
+
+  // Swipe handlers for week navigation
+  const handleSwipeLeft = useCallback(() => {
+    if (viewMode === 'week') {
+      setCurrentDate(prev => addWeeks(prev, 1));
+    }
+  }, [viewMode]);
+
+  const handleSwipeRight = useCallback(() => {
+    if (viewMode === 'week') {
+      setCurrentDate(prev => subWeeks(prev, 1));
+    }
+  }, [viewMode]);
+
+  const swipeHandlers = useSwipe(handleSwipeLeft, handleSwipeRight);
 
   const handleViewModeChange = (mode) => {
     setViewMode(mode);
@@ -311,7 +352,10 @@ function AppContent() {
         {loading ? (
           <LoadingSkeleton viewMode={viewMode} />
         ) : (
-          <div className={`timetable-grid ${viewMode}`}>
+          <div
+            className={`timetable-grid ${viewMode}`}
+            {...swipeHandlers}
+          >
             {viewMode === 'week' ? (
               weekDays.map(day => (
                 <DayColumn
@@ -332,6 +376,18 @@ function AppContent() {
               />
             )}
           </div>
+        )}
+
+        {/* Floating Today Button */}
+        {!isCurrentWeek && (
+          <button
+            className="fab-today"
+            onClick={handleJumpToToday}
+            aria-label="Torna a oggi"
+          >
+            <Calendar size={20} />
+            <span>Oggi</span>
+          </button>
         )}
       </main>
 
