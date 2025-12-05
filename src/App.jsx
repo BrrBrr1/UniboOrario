@@ -82,6 +82,7 @@ function AppContent() {
 
   // Check if viewing current week
   const isCurrentWeek = isSameWeek(currentDate, new Date(), { weekStartsOn: 1 });
+  const isToday = isSameDay(currentDate, new Date());
 
   // Initialize theme from localStorage or system preference
   const [theme, setTheme] = useState(() => {
@@ -379,7 +380,7 @@ function AppContent() {
         )}
 
         {/* Floating Today Button */}
-        {!isCurrentWeek && (
+        {(!isCurrentWeek || !isToday) && (
           <button
             className="fab-today"
             onClick={handleJumpToToday}
