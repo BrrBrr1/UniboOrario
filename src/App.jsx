@@ -380,7 +380,7 @@ function AppContent() {
         )}
 
         {/* Floating Today Button */}
-        {(!isCurrentWeek || !isToday) && (
+        {((viewMode === 'week' && !isCurrentWeek) || (viewMode === 'day' && !isToday)) && (
           <button
             className="fab-today"
             onClick={handleJumpToToday}
