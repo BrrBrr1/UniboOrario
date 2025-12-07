@@ -80,7 +80,7 @@ function AppContent() {
   // Additional settings
   const [compactView, setCompactView] = useLocalStorage('preference_compactView', false);
   const [use24Hour, setUse24Hour] = useLocalStorage('preference_use24Hour', true);
-  const [showWeekends, setShowWeekends] = useLocalStorage('preference_showWeekends', false);
+  const [showWeekends, setShowWeekends] = useLocalStorage('preference_showWeekends', true);
   const [notificationsEnabled, setNotificationsEnabled] = useLocalStorage('preference_notifications', true);
   const [autoRefresh, setAutoRefresh] = useLocalStorage('preference_autoRefresh', false);
 
