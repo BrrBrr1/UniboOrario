@@ -7,47 +7,60 @@ import CourseFilter from './components/CourseFilter';
 import ViewToggle from './components/ViewToggle';
 import DayTabs from './components/DayTabs';
 import YearSelector from './components/YearSelector';
+import CourseSelector from './components/CourseSelector'; // Imported CourseSelector
 import LoadingSkeleton from './components/LoadingSkeleton';
 import LessonFilter from './components/LessonFilter';
 import { fetchTimetable } from './services/api';
 import SettingsModal from './components/SettingsModal';
 import useLocalStorage from './hooks/useLocalStorage';
-import { NotificationProvider } from './context/NotificationContext';
+import { NotificationProvider, useNotification } from './context/NotificationContext';
 import NotificationContainer from './components/NotificationContainer';
 import useNetworkStatus from './hooks/useNetworkStatus';
 import usePWAUpdate from './hooks/usePWAUpdate';
 import useSwipe from './hooks/useSwipe';
 import { RotateCcw, Calendar } from 'lucide-react';
+import { courses } from './data/courses'; // Imported courses
 import './index.css';
 
-// Base URL and params from user request
-const BASE_URL = 'https://corsi.unibo.it/laurea/LingueTecnologieComunicazioneInterculturale/orario-lezioni/@@orario_reale_json';
-// STATIC_PARAMS removed, will be constructed dynamically
+// Default course if none selected (first in list)
+const DEFAULT_COURSE = courses[0];
 
 function AppContent() {
+  const { addNotification } = useNotification();
   const [events, setEvents] = useState([]);
   const [availableLessons, setAvailableLessons] = useState([]);
 
   // Use localStorage for preferences
+  const [selectedCourse, setSelectedCourse] = useLocalStorage('preference_course', DEFAULT_COURSE);
   const [year, setYear] = useLocalStorage('preference_year', 1);
+  const [customCourses, setCustomCourses] = useLocalStorage('preference_custom_courses', []);
+  const [hiddenCourseIds, setHiddenCourseIds] = useLocalStorage('preference_hidden_courses', []);
 
-  // Separate storage for each year
-  const [selectedLessonsYear1, setSelectedLessonsYear1] = useLocalStorage('preference_selectedLessons_year_1', null);
-  const [selectedLessonsYear2, setSelectedLessonsYear2] = useLocalStorage('preference_selectedLessons_year_2', null);
-  const [selectedLessonsYear3, setSelectedLessonsYear3] = useLocalStorage('preference_selectedLessons_year_3', null);
+  // Separate storage for each year (dynamically key based on course ID to avoid conflicts)
+  // We'll use a more dynamic approach for selected lessons key
+  const getSelectedLessonsKey = (courseId, yearVal) => `preference_selectedLessons_${courseId}_year_${yearVal}`;
 
-  // Dynamic selection based on current year
-  let selectedLessons, setSelectedLessons;
-  if (year === 1) {
-    selectedLessons = selectedLessonsYear1;
-    setSelectedLessons = setSelectedLessonsYear1;
-  } else if (year === 2) {
-    selectedLessons = selectedLessonsYear2;
-    setSelectedLessons = setSelectedLessonsYear2;
-  } else {
-    selectedLessons = selectedLessonsYear3;
-    setSelectedLessons = setSelectedLessonsYear3;
-  }
+  const [selectedLessons, setSelectedLessons] = useState(null);
+
+  // Load selected lessons when course/year changes
+  useEffect(() => {
+    const key = getSelectedLessonsKey(selectedCourse.id, year);
+    const saved = localStorage.getItem(key);
+    if (saved) {
+      setSelectedLessons(JSON.parse(saved));
+    } else {
+      setSelectedLessons(null); // Reset to null so we can default to 'all' later
+    }
+  }, [selectedCourse.id, year]);
+
+  // Save selected lessons whenever they change
+  useEffect(() => {
+    if (selectedLessons !== null) {
+      const key = getSelectedLessonsKey(selectedCourse.id, year);
+      localStorage.setItem(key, JSON.stringify(selectedLessons));
+    }
+  }, [selectedLessons, selectedCourse.id, year]);
+
   const [currentDate, setCurrentDate] = useState(() => {
     const savedDate = sessionStorage.getItem('currentDate');
     return savedDate ? new Date(savedDate) : new Date();
@@ -58,7 +71,7 @@ function AppContent() {
     sessionStorage.setItem('currentDate', currentDate.toISOString());
   }, [currentDate]);
   const [filter, setFilter] = useLocalStorage('preference_filter', '');
-  // year state moved up
+
   const [filterType, setFilterType] = useLocalStorage('preference_filterType', 'title'); // 'title', 'teacher', 'location'
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useLocalStorage('preference_viewMode', 'week'); // 'week' or 'day'
@@ -116,47 +129,123 @@ function AppContent() {
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, []);
 
+  const handleCourseChange = (newCourse) => {
+    setSelectedCourse(newCourse);
+    setYear(1);
+    setSelectedLessons(null);
+    setAvailableLessons([]);
+    setLoading(true);
+  };
+
+  const handleYearChange = (newYear) => {
+    setYear(newYear);
+    setSelectedLessons(null);
+    setAvailableLessons([]);
+    setLoading(true);
+  };
+
+  const validateCustomCourse = async (courseData) => {
+    try {
+      // Try to fetch data for year 1 to validate
+      const testUrl = `${courseData.url}?anno=1&curricula=${courseData.curricula || ''}`;
+      const data = await fetchTimetable(testUrl);
+      return data && Array.isArray(data);
+    } catch (e) {
+      return false;
+    }
+  };
+
+  const handleAddCustomCourse = async (courseData) => {
+    setLoading(true);
+    const isValid = await validateCustomCourse(courseData);
+    setLoading(false);
+
+    if (isValid) {
+      setCustomCourses(prev => [...prev, { ...courseData, id: `custom-${Date.now()}` }]);
+      addNotification('success', 'Corso aggiunto con successo');
+      return true;
+    } else {
+      addNotification('error', 'URL o Curricula non validi. Impossibile recuperare i dati.');
+      return false;
+    }
+  };
+
+  const handleRemoveCustomCourse = (courseId) => {
+    setCustomCourses(prev => prev.filter(c => c.id !== courseId));
+    if (selectedCourse.id === courseId) {
+      setSelectedCourse(DEFAULT_COURSE);
+      setYear(1);
+    }
+    addNotification('info', 'Corso rimosso');
+  };
+
+  const handleToggleCourseVisibility = (courseId) => {
+    setHiddenCourseIds(prev => {
+      if (prev.includes(courseId)) {
+        return prev.filter(id => id !== courseId);
+      } else {
+        return [...prev, courseId];
+      }
+    });
+  };
+
   useEffect(() => {
     const loadData = async () => {
+      if (!selectedCourse?.url) return;
+
+      // setLoading(true); // Already set in handlers, but safe to keep or remove. 
+      // Keeping it here covers initial load which doesn't go through handlers.
       setLoading(true);
 
-      // Calculate start (Monday) and end (Next Monday) for the current week
-      const start = startOfWeek(currentDate, { weekStartsOn: 1 });
-      const end = addWeeks(start, 1);
+      try {
+        // Calculate start (Monday) and end (Next Monday) for the current week
+        const start = startOfWeek(currentDate, { weekStartsOn: 1 });
+        const end = addWeeks(start, 1);
 
-      const startStr = format(start, 'yyyy-MM-dd');
-      const endStr = format(end, 'yyyy-MM-dd');
+        const startStr = format(start, 'yyyy-MM-dd');
+        const endStr = format(end, 'yyyy-MM-dd');
 
-      const url = `${BASE_URL}?anno=${year}&curricula=C60-000&start=${startStr}&end=${endStr}`;
+        const curriculaParam = selectedCourse.curricula !== undefined ? selectedCourse.curricula : 'C60-000';
+        const url = `${selectedCourse.url}?anno=${year}&curricula=${curriculaParam}&start=${startStr}&end=${endStr}`;
 
-      console.log('Fetching URL:', url); // For debugging
+        console.log('Fetching URL:', url); // For debugging
 
-      const data = await fetchTimetable(url);
+        const data = await fetchTimetable(url);
 
-      // Extract unique lessons
-      const uniqueLessonsMap = new Map();
-      data.forEach(event => {
-        if (!uniqueLessonsMap.has(event.cod_modulo)) {
-          uniqueLessonsMap.set(event.cod_modulo, {
-            cod_modulo: event.cod_modulo,
-            title: event.title
-          });
+        // Extract unique lessons
+        const uniqueLessonsMap = new Map();
+        data.forEach(event => {
+          if (!uniqueLessonsMap.has(event.cod_modulo)) {
+            uniqueLessonsMap.set(event.cod_modulo, {
+              cod_modulo: event.cod_modulo,
+              title: event.title
+            });
+          }
+        });
+        const uniqueLessons = Array.from(uniqueLessonsMap.values());
+
+        setAvailableLessons(uniqueLessons);
+
+        // If no lessons are selected yet (first visit for this course/year), select all by default
+        const key = getSelectedLessonsKey(selectedCourse.id, year);
+        const saved = localStorage.getItem(key);
+
+        if (!saved) {
+          setSelectedLessons(uniqueLessons.map(l => l.cod_modulo));
         }
-      });
-      const uniqueLessons = Array.from(uniqueLessonsMap.values());
 
-      setAvailableLessons(uniqueLessons);
-
-      // If no lessons are selected yet (first visit), select all by default
-      if (selectedLessons === null) {
-        setSelectedLessons(uniqueLessons.map(l => l.cod_modulo));
+        setEvents(data);
+      } catch (error) {
+        console.error("Error loading timetable:", error);
+        addNotification('error', 'URL Json o Codice Curricula errati');
+        setEvents([]);
+        // Optionally notify user
+      } finally {
+        setLoading(false);
       }
-
-      setEvents(data);
-      setLoading(false);
     };
     loadData();
-  }, [currentDate, year]);
+  }, [currentDate, year, selectedCourse]);
 
   // Auto-refresh functionality
   useEffect(() => {
@@ -326,7 +415,22 @@ function AppContent() {
             <ViewToggle viewMode={viewMode} onViewChange={handleViewModeChange} />
           </div>
 
-          <YearSelector year={year} onYearChange={setYear} />
+          <div className="selectors-row">
+            <CourseSelector
+              selectedCourse={selectedCourse}
+              onCourseChange={handleCourseChange}
+              customCourses={customCourses}
+              hiddenCourseIds={hiddenCourseIds}
+              onAddCustomCourse={handleAddCustomCourse}
+              onRemoveCustomCourse={handleRemoveCustomCourse}
+              onToggleCourseVisibility={handleToggleCourseVisibility}
+            />
+            <YearSelector
+              year={year}
+              onYearChange={handleYearChange}
+              maxYears={selectedCourse.years}
+            />
+          </div>
 
           <LessonFilter
             lessons={availableLessons}

@@ -146,7 +146,7 @@ const SettingsModal = ({
                 </div>
 
                 <div className="modal-footer">
-                    <p>Unibo Orario PWA v0.3.1</p>
+                    <p>Unibo Orario PWA v0.3.5</p>
                     <p style={{ marginTop: '4px' }}>Made by: Sagal</p>
                 </div>
             </div>
