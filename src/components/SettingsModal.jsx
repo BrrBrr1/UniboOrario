@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Moon, Sun, Maximize2, Minimize2, Clock, Calendar, Bell, BellOff, RefreshCw, Globe } from 'lucide-react';
+import { X, Moon, Sun, Maximize2, Minimize2, Clock, Calendar, Bell, BellOff, RefreshCw, Globe, Info } from 'lucide-react';
 
 const SettingsModal = ({
     isOpen,
@@ -143,12 +143,41 @@ const SettingsModal = ({
                             <span className="toggle-slider"></span>
                         </label>
                     </div>
+                    {/* About Section */}
+                    <div className="setting-item" style={{ alignItems: 'flex-start' }}>
+                        <div className="setting-info" style={{ width: '100%' }}>
+                            <div className="setting-label-row" style={{ marginBottom: '8px' }}>
+                                <Info size={18} />
+                                <span className="setting-label">Informazioni</span>
+                            </div>
+                            <div className="setting-desc" style={{ textAlign: 'center' }}>
+                                <p style={{ marginBottom: '16px', lineHeight: '1.4' }}>
+                                    Applicazione <strong>NON Ufficiale</strong> dell'Alma Mater Studiorum - Università di Bologna
+                                </p>
+                                <div style={{
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    gap: '4px',
+                                    marginTop: '16px',
+                                    opacity: 0.7,
+                                    fontSize: '1em'
+                                }}>
+                                    <span>Made by <strong>Sagal</strong></span>
+                                    <span style={{
+                                        padding: '2px 8px',
+                                        background: 'rgba(0,0,0,0.1)',
+                                        borderRadius: '4px'
+                                    }}>
+                                        v0.3.8
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <div className="modal-footer">
-                    <p>Unibo Orario PWA v0.3.5</p>
-                    <p style={{ marginTop: '4px' }}>Made by: Sagal</p>
-                </div>
+
             </div>
         </div>
     );
