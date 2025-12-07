@@ -65,7 +65,7 @@ const LessonFilter = ({ lessons, selectedLessons, onSelectionChange, loading = f
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <span className="filter-badge" aria-label={`${selectedLessons.length} di ${lessons.length} selezionate`}>
-                        {loading ? '0/0' : `${selectedLessons.length}/${lessons.length}`}
+                        {loading ? '0/0' : `${lessons.filter(l => selectedLessons.includes(l.cod_modulo)).length}/${lessons.length}`}
                     </span>
                     <ChevronDown
                         size={18}
