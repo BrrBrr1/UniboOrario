@@ -19,6 +19,7 @@
   --hover-bg: #f0f0f0;
   --input-bg: transparent;
   --input-text: inherit;
+  --toggle-off-bg: #cbd5e1;
 }
 
 [data-theme="dark"] {
@@ -42,6 +43,7 @@
   --hover-bg: #1f1f1f;
   --input-bg: transparent;
   --input-text: #e0e0e0;
+  --toggle-off-bg: #4b5563;
 }
 
 /* Event Card */
@@ -426,7 +428,7 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: var(--border-color);
+  background-color: var(--toggle-off-bg);
   transition: 0.3s;
   border-radius: 34px;
 }
