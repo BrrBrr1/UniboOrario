@@ -6,7 +6,6 @@ const LessonFilter = ({ lessons, selectedLessons, onSelectionChange, loading = f
     const dropdownRef = useRef(null);
     const buttonRef = useRef(null);
 
-    // Close dropdown when clicking outside
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -18,7 +17,6 @@ const LessonFilter = ({ lessons, selectedLessons, onSelectionChange, loading = f
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    // Handle escape key to close dropdown
     useEffect(() => {
         const handleEscape = (e) => {
             if (e.key === 'Escape' && isOpen) {

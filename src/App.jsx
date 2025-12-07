@@ -7,7 +7,7 @@ import CourseFilter from './components/CourseFilter';
 import ViewToggle from './components/ViewToggle';
 import DayTabs from './components/DayTabs';
 import YearSelector from './components/YearSelector';
-import CourseSelector from './components/CourseSelector'; // Imported CourseSelector
+import CourseSelector from './components/CourseSelector';
 import LoadingSkeleton from './components/LoadingSkeleton';
 import LessonFilter from './components/LessonFilter';
 import { fetchTimetable } from './services/api';
@@ -19,10 +19,9 @@ import useNetworkStatus from './hooks/useNetworkStatus';
 import usePWAUpdate from './hooks/usePWAUpdate';
 import useSwipe from './hooks/useSwipe';
 import { RotateCcw, Calendar } from 'lucide-react';
-import { courses } from './data/courses'; // Imported courses
+import { courses } from './data/courses';
 import './index.css';
 
-// Default course if none selected (first in list)
 const DEFAULT_COURSE = courses[0];
 
 function AppContent() {
@@ -30,30 +29,27 @@ function AppContent() {
   const [events, setEvents] = useState([]);
   const [availableLessons, setAvailableLessons] = useState([]);
 
-  // Use localStorage for preferences
   const [selectedCourse, setSelectedCourse] = useLocalStorage('preference_course', DEFAULT_COURSE);
   const [year, setYear] = useLocalStorage('preference_year', 1);
   const [customCourses, setCustomCourses] = useLocalStorage('preference_custom_courses', []);
   const [hiddenCourseIds, setHiddenCourseIds] = useLocalStorage('preference_hidden_courses', []);
 
-  // Separate storage for each year (dynamically key based on course ID to avoid conflicts)
-  // We'll use a more dynamic approach for selected lessons key
+  const [courseOrder, setCourseOrder] = useLocalStorage('preference_course_order', []);
+
   const getSelectedLessonsKey = (courseId, yearVal) => `preference_selectedLessons_${courseId}_year_${yearVal}`;
 
   const [selectedLessons, setSelectedLessons] = useState(null);
 
-  // Load selected lessons when course/year changes
   useEffect(() => {
     const key = getSelectedLessonsKey(selectedCourse.id, year);
     const saved = localStorage.getItem(key);
     if (saved) {
       setSelectedLessons(JSON.parse(saved));
     } else {
-      setSelectedLessons(null); // Reset to null so we can default to 'all' later
+      setSelectedLessons(null);
     }
   }, [selectedCourse.id, year]);
 
-  // Save selected lessons whenever they change
   useEffect(() => {
     if (selectedLessons !== null) {
       const key = getSelectedLessonsKey(selectedCourse.id, year);
@@ -66,60 +62,50 @@ function AppContent() {
     return savedDate ? new Date(savedDate) : new Date();
   });
 
-  // Persist currentDate to sessionStorage
   useEffect(() => {
     sessionStorage.setItem('currentDate', currentDate.toISOString());
   }, [currentDate]);
   const [filter, setFilter] = useLocalStorage('preference_filter', '');
 
-  const [filterType, setFilterType] = useLocalStorage('preference_filterType', 'title'); // 'title', 'teacher', 'location'
+  const [filterType, setFilterType] = useLocalStorage('preference_filterType', 'title');
   const [loading, setLoading] = useState(true);
-  const [viewMode, setViewMode] = useLocalStorage('preference_viewMode', 'week'); // 'week' or 'day'
+  const [viewMode, setViewMode] = useLocalStorage('preference_viewMode', 'week');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
-  // Additional settings
   const [compactView, setCompactView] = useLocalStorage('preference_compactView', false);
   const [use24Hour, setUse24Hour] = useLocalStorage('preference_use24Hour', true);
   const [showWeekends, setShowWeekends] = useLocalStorage('preference_showWeekends', true);
   const [notificationsEnabled, setNotificationsEnabled] = useLocalStorage('preference_notifications', true);
   const [autoRefresh, setAutoRefresh] = useLocalStorage('preference_autoRefresh', false);
 
-  // Initialize hooks for notifications
   useNetworkStatus();
   usePWAUpdate();
 
-  // Pull-to-refresh state
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [pullDistance, setPullDistance] = useState(0);
   const PULL_THRESHOLD = 80;
 
-  // Check if viewing current week
   const isCurrentWeek = isSameWeek(currentDate, new Date(), { weekStartsOn: 1 });
   const isToday = isSameDay(currentDate, new Date());
 
-  // Initialize theme from localStorage or system preference
   const [theme, setTheme] = useState(() => {
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme) return savedTheme;
 
-    // Check system preference
     if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
       return 'dark';
     }
     return 'light';
   });
 
-  // Update document theme and persist to localStorage
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('theme', theme);
   }, [theme]);
 
-  // Listen for system theme changes
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     const handleChange = (e) => {
-      // Only update if user hasn't manually set a preference
       if (!localStorage.getItem('theme')) {
         setTheme(e.matches ? 'dark' : 'light');
       }
@@ -146,7 +132,6 @@ function AppContent() {
 
   const validateCustomCourse = async (courseData) => {
     try {
-      // Try to fetch data for year 1 to validate
       const testUrl = `${courseData.url}?anno=1&curricula=${courseData.curricula || ''}`;
       const data = await fetchTimetable(testUrl);
       return data && Array.isArray(data);
@@ -193,12 +178,9 @@ function AppContent() {
     const loadData = async () => {
       if (!selectedCourse?.url) return;
 
-      // setLoading(true); // Already set in handlers, but safe to keep or remove. 
-      // Keeping it here covers initial load which doesn't go through handlers.
       setLoading(true);
 
       try {
-        // Calculate start (Monday) and end (Next Monday) for the current week
         const start = startOfWeek(currentDate, { weekStartsOn: 1 });
         const end = addWeeks(start, 1);
 
@@ -212,7 +194,6 @@ function AppContent() {
 
         const data = await fetchTimetable(url);
 
-        // Extract unique lessons
         const uniqueLessonsMap = new Map();
         data.forEach(event => {
           if (!uniqueLessonsMap.has(event.cod_modulo)) {
@@ -226,7 +207,6 @@ function AppContent() {
 
         setAvailableLessons(uniqueLessons);
 
-        // If no lessons are selected yet (first visit for this course/year), select all by default
         const key = getSelectedLessonsKey(selectedCourse.id, year);
         const saved = localStorage.getItem(key);
 
@@ -239,7 +219,6 @@ function AppContent() {
         console.error("Error loading timetable:", error);
         addNotification('error', 'URL Json o Codice Curricula errati');
         setEvents([]);
-        // Optionally notify user
       } finally {
         setLoading(false);
       }
@@ -247,44 +226,35 @@ function AppContent() {
     loadData();
   }, [currentDate, year, selectedCourse]);
 
-  // Auto-refresh functionality
   useEffect(() => {
     if (!autoRefresh) return;
 
     const intervalId = setInterval(() => {
       console.log('Auto-refreshing timetable data...');
-      setCurrentDate(prev => new Date(prev)); // Trigger reload by updating the date object
-    }, 60 * 60 * 1000); // Refresh every hour
+      setCurrentDate(prev => new Date(prev));
+    }, 60 * 60 * 1000);
 
     return () => clearInterval(intervalId);
   }, [autoRefresh]);
 
   const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
-  // Show weekends if enabled, otherwise Mon-Fri only
   const weekDays = Array.from({ length: showWeekends ? 7 : 5 }, (_, i) => addDays(weekStart, i));
 
-  // Navigation handlers
   const handleDateChange = (newDate) => {
     setCurrentDate(newDate);
   };
 
-  // Jump to today
   const handleJumpToToday = () => {
     setCurrentDate(new Date());
   };
 
-  // Pull-to-refresh handlers
   const handleRefresh = useCallback(async () => {
     setIsRefreshing(true);
-    // Trigger reload by updating the date object
     setCurrentDate(prev => new Date(prev));
-    // Add a minimum delay for visual feedback
     await new Promise(resolve => setTimeout(resolve, 500));
     setIsRefreshing(false);
     setPullDistance(0);
   }, []);
-
-  // Swipe handlers for week navigation
   const handleSwipeLeft = useCallback(() => {
     if (viewMode === 'week') {
       setCurrentDate(prev => addWeeks(prev, 1));
@@ -304,33 +274,26 @@ function AppContent() {
     if (mode === 'day') {
       const today = new Date();
       const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
-      const weekEnd = addDays(weekStart, 6); // Sunday 00:00
-      // Set weekEnd to end of day to include all of Sunday
+      const weekEnd = addDays(weekStart, 6);
       weekEnd.setHours(23, 59, 59, 999);
 
-      // Check if today is within the currently viewed week
       if (today >= weekStart && today <= weekEnd) {
         setCurrentDate(today);
       } else {
-        // If not, default to Monday of that week
         setCurrentDate(weekStart);
       }
     }
   };
 
-  // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e) => {
-      // Don't trigger shortcuts when typing in input
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
 
       switch (e.key) {
         case 'ArrowLeft':
-          // Navigate to previous week
           setCurrentDate(prev => subWeeks(prev, 1));
           break;
         case 'ArrowRight':
-          // Navigate to next week
           setCurrentDate(prev => addWeeks(prev, 1));
           break;
         case '1':
@@ -339,11 +302,9 @@ function AppContent() {
         case '5':
         case '6':
         case '7':
-          // Jump to specific day (Mon-Fri, or Mon-Sun if weekends enabled)
           if (viewMode === 'day') {
             const dayIndex = parseInt(e.key) - 1;
 
-            // Only allow navigation to weekends if enabled
             if (dayIndex >= 5 && !showWeekends) return;
 
             const currentWeekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
@@ -353,21 +314,17 @@ function AppContent() {
           break;
         case 'w':
         case 'W':
-          // Switch to week view
           setViewMode('week');
           break;
         case 'd':
         case 'D':
-          // Switch to day view
           handleViewModeChange('day');
           break;
         case 's':
         case 'S':
-          // Open settings
           setIsSettingsOpen(true);
           break;
         case '/':
-          // Focus search - find the filter input
           e.preventDefault();
           const filterInput = document.querySelector('.filter-input');
           if (filterInput) filterInput.focus();
@@ -379,14 +336,10 @@ function AppContent() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [viewMode, currentDate, handleViewModeChange]);
 
-  // Advanced filter logic
   const filteredEvents = events.filter(event => {
-    // First, filter by selected lessons
     if (selectedLessons && !selectedLessons.includes(event.cod_modulo)) {
       return false;
     }
-
-    // Then apply search filter
     if (!filter) return true;
 
     const searchLower = filter.toLowerCase();
@@ -424,6 +377,8 @@ function AppContent() {
               onAddCustomCourse={handleAddCustomCourse}
               onRemoveCustomCourse={handleRemoveCustomCourse}
               onToggleCourseVisibility={handleToggleCourseVisibility}
+              courseOrder={courseOrder}
+              onOrderChange={setCourseOrder}
             />
             <YearSelector
               year={year}

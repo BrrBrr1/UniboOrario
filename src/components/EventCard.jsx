@@ -3,7 +3,6 @@ import { MapPin, Clock, User } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { formatTime } from '../utils/timeFormat';
 
-// Simple hash function to get consistent color index from title
 const getColorIndex = (str) => {
     let hash = 0;
     for (let i = 0; i < str.length; i++) {
@@ -13,15 +12,10 @@ const getColorIndex = (str) => {
 };
 
 const EventCard = memo(({ event, compactView = false, use24Hour = true }) => {
-    // Extract relevant info
     const { title, time, aule, docente, cod_modulo } = event;
     const location = aule?.[0]?.des_risorsa || 'Aula non specificata';
     const address = aule?.[0]?.des_indirizzo || '';
-
-    // Format time based on user preference
     const displayTime = formatTime(time, use24Hour);
-
-    // Get consistent color based on lesson code or title
     const colorIndex = getColorIndex(cod_modulo || title);
 
     return (

@@ -18,7 +18,6 @@ const usePWAUpdate = () => {
 
     useEffect(() => {
         if (needRefresh) {
-            // Notify user
             addNotification(
                 'info',
                 'Nuova versione trovata. Aggiornamento in corso...',
@@ -26,10 +25,8 @@ const usePWAUpdate = () => {
             );
 
             const performUpdate = async () => {
-                // Wait for user to read notification
                 await new Promise(resolve => setTimeout(resolve, 3000));
 
-                // Clear caches (but NOT localStorage)
                 if ('caches' in window) {
                     try {
                         const keys = await caches.keys();
@@ -40,7 +37,6 @@ const usePWAUpdate = () => {
                     }
                 }
 
-                // Trigger update and reload
                 updateServiceWorker(true);
             };
 

@@ -21,7 +21,6 @@ const useNetworkStatus = () => {
         window.addEventListener('online', handleOnline);
         window.addEventListener('offline', handleOffline);
 
-        // Check initial status
         if (!navigator.onLine) {
             handleOffline();
         }

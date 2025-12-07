@@ -5,13 +5,10 @@ const YearSelector = ({ year, onYearChange, maxYears = 3 }) => {
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef(null);
 
-    // Generate years array based on maxYears
     const years = Array.from({ length: maxYears }, (_, i) => ({
         value: i + 1,
         label: `${i + 1}° Anno`
     }));
-
-    // Close dropdown when clicking outside
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {

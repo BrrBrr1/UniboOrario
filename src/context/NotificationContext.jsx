@@ -23,7 +23,6 @@ export const NotificationProvider = ({ children }) => {
         };
 
         setNotifications((prev) => {
-            // Avoid duplicate IDs if a specific ID is provided (e.g., for persistent network status)
             if (id && prev.some(n => n.id === id)) {
                 return prev;
             }

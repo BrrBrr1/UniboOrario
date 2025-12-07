@@ -7,19 +7,15 @@ const DayTabs = ({ currentDate, onDateChange, showWeekends = false }) => {
     const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
     const weekDays = Array.from({ length: showWeekends ? 7 : 5 }, (_, i) => addDays(weekStart, i));
 
-    // Get current day index in week
     const currentDayIndex = weekDays.findIndex(day => isSameDay(day, currentDate));
 
-    // Swipe handlers for mobile navigation
     const handleSwipeLeft = () => {
-        // Go to next day
         if (currentDayIndex < weekDays.length - 1) {
             onDateChange(weekDays[currentDayIndex + 1]);
         }
     };
 
     const handleSwipeRight = () => {
-        // Go to previous day
         if (currentDayIndex > 0) {
             onDateChange(weekDays[currentDayIndex - 1]);
         }

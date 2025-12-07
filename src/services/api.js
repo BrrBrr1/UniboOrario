@@ -1,9 +1,6 @@
 export const fetchTimetable = async (url) => {
     try {
-        // Check if it's a valid URL
         const targetUrl = new URL(url);
-
-        // NOTE: The user provided URL returns JSON.
         const response = await fetch(targetUrl.toString());
 
         if (!response.ok) {

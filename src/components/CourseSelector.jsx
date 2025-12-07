@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { Search, ChevronDown, BookOpen, Link as LinkIcon, X, Trash2, EyeOff, Eye } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Search, ChevronDown, BookOpen, Link as LinkIcon, X, Trash2, EyeOff, Eye, GripVertical } from 'lucide-react';
+import { Reorder } from 'framer-motion';
 import { courses } from '../data/courses';
 
 const CourseSelector = ({
@@ -9,7 +10,9 @@ const CourseSelector = ({
     hiddenCourseIds = [],
     onAddCustomCourse,
     onRemoveCustomCourse,
-    onToggleCourseVisibility
+    onToggleCourseVisibility,
+    courseOrder = [],
+    onOrderChange
 }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
@@ -20,10 +23,20 @@ const CourseSelector = ({
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [manageMode, setManageMode] = useState(false);
 
-    // Merge static and custom courses
-    const allCourses = [...courses, ...customCourses];
+    const allCourses = useMemo(() => [...courses, ...customCourses], [customCourses]);
 
-    // Close modal when pressing Escape
+    const orderedCourses = useMemo(() => {
+        if (!courseOrder || courseOrder.length === 0) return allCourses;
+
+        const orderMap = new Map(courseOrder.map((id, index) => [id, index]));
+
+        return [...allCourses].sort((a, b) => {
+            const indexA = orderMap.has(a.id) ? orderMap.get(a.id) : 9999;
+            const indexB = orderMap.has(b.id) ? orderMap.get(b.id) : 9999;
+            return indexA - indexB;
+        });
+    }, [allCourses, courseOrder]);
+
     useEffect(() => {
         const handleEscape = (e) => {
             if (e.key === 'Escape') setIsOpen(false);
@@ -32,15 +45,21 @@ const CourseSelector = ({
         return () => window.removeEventListener('keydown', handleEscape);
     }, []);
 
-    const filteredCourses = allCourses.filter(course => {
-        // If not searching and not in manage mode, hide hidden courses
+    const filteredCourses = orderedCourses.filter(course => {
         if (!manageMode && !searchTerm && hiddenCourseIds.includes(course.id)) return false;
 
         return course.name.toLowerCase().includes(searchTerm.toLowerCase());
     });
 
+    const isReorderEnabled = manageMode && !searchTerm && onOrderChange;
+
+    const handleReorder = (newOrder) => {
+        const newOrderIds = newOrder.map(c => c.id);
+        onOrderChange(newOrderIds);
+    };
+
     const handleSelectCourse = (course) => {
-        if (manageMode) return; // Prevent selection in manage mode
+        if (manageMode) return;
         onCourseChange(course);
         setIsOpen(false);
         setSearchTerm('');
@@ -68,6 +87,56 @@ const CourseSelector = ({
             }
         }
     };
+
+    const renderCourseItem = (course, isDraggable = false) => (
+        <div
+            className={`course-item ${selectedCourse?.id === course.id ? 'active' : ''} ${hiddenCourseIds.includes(course.id) ? 'hidden-item' : ''}`}
+            onClick={() => handleSelectCourse(course)}
+        >
+            {isDraggable && (
+                <div className="drag-handle" onPointerDown={(e) => e.preventDefault()}> {/* preventDefault prevents issues with touch scrolling/selection sometimes, though framer usually handles it. But standard practice for pure drag handles. */}
+                    <GripVertical size={20} className="text-gray-400" />
+                </div>
+            )}
+            <div className="course-icon">
+                <BookOpen size={20} />
+            </div>
+            <div className="course-details">
+                <span className="course-name">{course.name}</span>
+                <span className="course-type">{course.type}</span>
+            </div>
+
+            {manageMode && (
+                <div className="course-actions" onClick={e => e.stopPropagation()}>
+                    <button
+                        className={`action-btn ${hiddenCourseIds.includes(course.id) ? 'show-btn' : 'hide-btn'}`}
+                        onClick={() => onToggleCourseVisibility(course.id)}
+                        title={hiddenCourseIds.includes(course.id) ? "Mostra corso" : "Nascondi corso"}
+                    >
+                        {hiddenCourseIds.includes(course.id) ? (
+                            <Eye size={18} className="opacity-50" />
+                        ) : (
+                            <EyeOff size={18} />
+                        )}
+                    </button>
+
+                    {course.type === 'Custom' ? (
+                        <button
+                            className="action-btn delete-btn"
+                            onClick={() => onRemoveCustomCourse(course.id)}
+                            title="Elimina corso"
+                        >
+                            <Trash2 size={18} />
+                        </button>
+                    ) : (
+                        <div className="action-btn" style={{ visibility: 'hidden', pointerEvents: 'none' }}>
+                            <Trash2 size={18} />
+                        </div>
+                    )}
+                </div>
+            )}
+        </div>
+    );
 
     return (
         <>
@@ -109,51 +178,26 @@ const CourseSelector = ({
                                 </div>
 
                                 <div className="courses-list">
-                                    {filteredCourses.map(course => (
-                                        <button
-                                            key={course.id}
-                                            className={`course-item ${selectedCourse?.id === course.id ? 'active' : ''} ${hiddenCourseIds.includes(course.id) ? 'hidden-item' : ''}`}
-                                            onClick={() => handleSelectCourse(course)}
-                                        >
-                                            <div className="course-icon">
-                                                <BookOpen size={20} />
-                                            </div>
-                                            <div className="course-details">
-                                                <span className="course-name">{course.name}</span>
-                                                <span className="course-type">{course.type}</span>
-                                            </div>
-
-                                            {manageMode && (
-                                                <div className="course-actions" onClick={e => e.stopPropagation()}>
-                                                    <button
-                                                        className={`action-btn ${hiddenCourseIds.includes(course.id) ? 'show-btn' : 'hide-btn'}`}
-                                                        onClick={() => onToggleCourseVisibility(course.id)}
-                                                        title={hiddenCourseIds.includes(course.id) ? "Mostra corso" : "Nascondi corso"}
-                                                    >
-                                                        {hiddenCourseIds.includes(course.id) ? (
-                                                            <Eye size={18} className="opacity-50" />
-                                                        ) : (
-                                                            <EyeOff size={18} />
-                                                        )}
-                                                    </button>
-
-                                                    {course.type === 'Custom' ? (
-                                                        <button
-                                                            className="action-btn delete-btn"
-                                                            onClick={() => onRemoveCustomCourse(course.id)}
-                                                            title="Elimina corso"
-                                                        >
-                                                            <Trash2 size={18} />
-                                                        </button>
-                                                    ) : (
-                                                        <div className="action-btn" style={{ visibility: 'hidden', pointerEvents: 'none' }}>
-                                                            <Trash2 size={18} />
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            )}
-                                        </button>
-                                    ))}
+                                    {isReorderEnabled ? (
+                                        <Reorder.Group axis="y" values={filteredCourses} onReorder={handleReorder} className="reorder-group">
+                                            {filteredCourses.map(course => (
+                                                <Reorder.Item key={course.id} value={course} className="reorder-item">
+                                                    {renderCourseItem(course, true)}
+                                                </Reorder.Item>
+                                            ))}
+                                        </Reorder.Group>
+                                    ) : (
+                                        filteredCourses.map(course => (
+                                            <button
+                                                key={course.id}
+                                                className="course-item-wrapper-btn"
+                                                onClick={() => handleSelectCourse(course)}
+                                                style={{ display: 'block', width: '100%', padding: 0, border: 'none', background: 'none', textAlign: 'left' }}
+                                            >
+                                                {renderCourseItem(course, false)}
+                                            </button>
+                                        ))
+                                    )}
 
                                     {filteredCourses.length === 0 && (
                                         <div className="no-results">
