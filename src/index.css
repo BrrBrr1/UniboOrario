@@ -2001,236 +2001,243 @@ body {
   font-weight: 600;
   color: var(--text-main);
   margin-bottom: 0.1rem;
+}
 
-  .custom-dropdown-button.active {
-    color: var(--primary-color);
+[data-theme="dark"] .chevron-icon,
+[data-theme="dark"] .dropdown-chevron,
+[data-theme="dark"] .dropdown-icon,
+[data-theme="dark"] .select-icon {
+  color: #ffffff !important;
+}
+
+.custom-dropdown-button.active {
+  color: var(--primary-color);
+}
+
+.dropdown-icon {
+  color: var(--text-secondary);
+  transition: transform 0.2s;
+}
+
+.dropdown-icon.rotate {
+  transform: rotate(180deg);
+}
+
+.custom-dropdown-button:hover .dropdown-icon {
+  color: var(--primary-color);
+}
+
+.custom-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 0.5rem;
+  background-color: var(--card-bg);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border-color);
+  z-index: 100;
+  min-width: 140px;
+  overflow: hidden;
+  animation: fadeIn 0.15s ease-out;
+}
+
+.custom-dropdown-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  font-size: 0.95rem;
+  color: var(--text-main);
+  transition: background 0.1s;
+}
+
+.custom-dropdown-item:hover {
+  background-color: var(--hover-bg);
+}
+
+.custom-dropdown-item.selected {
+  background-color: var(--tab-active-bg);
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+.check-icon {
+  color: var(--primary-color);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
   }
 
-  .dropdown-icon {
-    color: var(--text-secondary);
-    transition: transform 0.2s;
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
+}
 
-  .dropdown-icon.rotate {
-    transform: rotate(180deg);
-  }
+/* Course Selector Modal Tweaks */
+.course-search-modal .modal-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 1rem;
+  margin-top: auto;
+}
 
-  .custom-dropdown-button:hover .dropdown-icon {
-    color: var(--primary-color);
-  }
+.manage-toggle-container {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-left: auto;
+}
 
-  .custom-dropdown-menu {
-    position: absolute;
-    top: 100%;
-    right: 0;
-    margin-top: 0.5rem;
-    background-color: var(--card-bg);
-    border-radius: var(--border-radius);
-    box-shadow: var(--shadow-md);
-    border: 1px solid var(--border-color);
-    z-index: 100;
-    min-width: 140px;
-    overflow: hidden;
-    animation: fadeIn 0.15s ease-out;
-  }
+.manage-label {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
 
-  .custom-dropdown-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    padding: 0.75rem 1rem;
-    border: none;
-    background: none;
-    text-align: left;
-    cursor: pointer;
-    font-size: 0.95rem;
-    color: var(--text-main);
-    transition: background 0.1s;
-  }
+/* Small toggle switch modifier */
+.toggle-switch.small {
+  width: 40px;
+  height: 22px;
+}
 
-  .custom-dropdown-item:hover {
-    background-color: var(--hover-bg);
-  }
+.toggle-switch.small .toggle-slider:before {
+  height: 16px;
+  width: 16px;
+  left: 3px;
+  bottom: 3px;
+}
 
-  .custom-dropdown-item.selected {
-    background-color: var(--tab-active-bg);
-    color: var(--primary-color);
-    font-weight: 600;
-  }
+.toggle-switch.small input:checked+.toggle-slider:before {
+  transform: translateX(18px);
+}
 
-  .check-icon {
-    color: var(--primary-color);
-  }
+/* Course Item Tweaks */
+.course-item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 0.85rem 1rem;
+  background: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s;
+  gap: 1rem;
+  position: relative;
+}
 
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-      transform: translateY(-5px);
-    }
+.course-item:hover {
+  background-color: var(--hover-bg);
+  border-color: transparent;
+}
 
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
+.course-item.active {
+  border-color: var(--primary-color);
+  background-color: var(--tab-active-bg);
+}
 
-  /* Course Selector Modal Tweaks */
-  .course-search-modal .modal-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-top: 1rem;
-    margin-top: auto;
-  }
+.course-item.hidden-item {
+  opacity: 0.6;
+  background-color: rgba(0, 0, 0, 0.02);
+}
 
-  .manage-toggle-container {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    margin-left: auto;
-  }
+.course-details {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  /* Take available text space */
+  min-width: 0;
+  /* Enable text truncation */
+}
 
-  .manage-label {
-    font-size: 0.85rem;
-    color: var(--text-secondary);
-    font-weight: 500;
-  }
+/* Action Buttons */
+.course-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: auto;
+  /* Push to right */
+  padding-left: 0.5rem;
+}
 
-  /* Small toggle switch modifier */
-  .toggle-switch.small {
-    width: 40px;
-    height: 22px;
-  }
+.action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  padding: 0.5rem;
+  border-radius: 50%;
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: all 0.2s;
+}
 
-  .toggle-switch.small .toggle-slider:before {
-    height: 16px;
-    width: 16px;
-    left: 3px;
-    bottom: 3px;
-  }
+.action-btn:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+  color: var(--text-main);
+}
 
-  .toggle-switch.small input:checked+.toggle-slider:before {
-    transform: translateX(18px);
-  }
+.action-btn.delete-btn {
+  color: #ef4444;
+  /* Red */
+}
 
-  /* Course Item Tweaks */
-  .course-item {
-    display: flex;
-    align-items: center;
-    width: 100%;
-    padding: 0.85rem 1rem;
-    background: transparent;
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius);
-    cursor: pointer;
-    text-align: left;
-    transition: all 0.2s;
-    gap: 1rem;
-    position: relative;
-  }
+.action-btn.delete-btn:hover {
+  background-color: rgba(239, 68, 68, 0.1);
+}
 
-  .course-item:hover {
-    background-color: var(--hover-bg);
-    border-color: transparent;
-  }
+/* Specific fix for overlaying text */
+.course-item .course-name {
+  font-weight: 600;
+  color: var(--text-main);
+  margin-bottom: 0.1rem;
+}
 
-  .course-item.active {
-    border-color: var(--primary-color);
-    background-color: var(--tab-active-bg);
-  }
+.course-item .course-type {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
 
-  .course-item.hidden-item {
-    opacity: 0.6;
-    background-color: rgba(0, 0, 0, 0.02);
-  }
+/* Drag and Drop Sorting Styles */
+.reorder-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  width: 100%;
+}
 
-  .course-details {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    /* Take available text space */
-    min-width: 0;
-    /* Enable text truncation */
-  }
+.reorder-item {
+  position: relative;
+  list-style: none;
+  background: transparent;
+}
 
-  /* Action Buttons */
-  .course-actions {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin-left: auto;
-    /* Push to right */
-    padding-left: 0.5rem;
-  }
+.drag-handle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  cursor: grab;
+  color: var(--text-secondary);
+  margin-right: -0.25rem;
+  flex-shrink: 0;
+  touch-action: none;
+}
 
-  .action-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: transparent;
-    border: none;
-    padding: 0.5rem;
-    border-radius: 50%;
-    cursor: pointer;
-    color: var(--text-secondary);
-    transition: all 0.2s;
-  }
-
-  .action-btn:hover {
-    background-color: rgba(0, 0, 0, 0.05);
-    color: var(--text-main);
-  }
-
-  .action-btn.delete-btn {
-    color: #ef4444;
-    /* Red */
-  }
-
-  .action-btn.delete-btn:hover {
-    background-color: rgba(239, 68, 68, 0.1);
-  }
-
-  /* Specific fix for overlaying text */
-  .course-item .course-name {
-    font-weight: 600;
-    color: var(--text-main);
-    margin-bottom: 0.1rem;
-  }
-
-  .course-item .course-type {
-    font-size: 0.8rem;
-    color: var(--text-secondary);
-  }
-
-  /* Drag and Drop Sorting Styles */
-  .reorder-group {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-    width: 100%;
-  }
-
-  .reorder-item {
-    position: relative;
-    list-style: none;
-    background: transparent;
-  }
-
-  .drag-handle {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.5rem;
-    cursor: grab;
-    color: var(--text-secondary);
-    margin-right: -0.25rem;
-    flex-shrink: 0;
-    touch-action: none;
-  }
-
-  .drag-handle:active {
-    cursor: grabbing;
-    color: var(--primary-color);
-  }
+.drag-handle:active {
+  cursor: grabbing;
+  color: var(--primary-color);
 }
