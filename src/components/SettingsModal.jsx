@@ -169,7 +169,7 @@ const SettingsModal = ({
                                         background: 'rgba(0,0,0,0.1)',
                                         borderRadius: '4px'
                                     }}>
-                                        v0.3.8
+                                        v0.3.9
                                     </span>
                                 </div>
                             </div>
