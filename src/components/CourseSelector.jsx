@@ -3,6 +3,77 @@ import { Search, ChevronDown, BookOpen, Link as LinkIcon, X, Trash2, EyeOff, Eye
 import { Reorder, useDragControls } from 'framer-motion';
 import { courses } from '../data/courses';
 
+// Separate component for draggable items to use the useDragControls hook
+const DraggableCourseItem = ({
+    course,
+    selectedCourse,
+    hiddenCourseIds,
+    manageMode,
+    onSelectCourse,
+    onToggleCourseVisibility,
+    onRemoveCustomCourse
+}) => {
+    const dragControls = useDragControls();
+
+    return (
+        <Reorder.Item
+            value={course}
+            className="reorder-item"
+            dragListener={false}
+            dragControls={dragControls}
+            style={{ touchAction: 'pan-y' }}
+        >
+            <div
+                className={`course-item ${selectedCourse?.id === course.id ? 'active' : ''} ${hiddenCourseIds.includes(course.id) ? 'hidden-item' : ''}`}
+                onClick={() => onSelectCourse(course)}
+            >
+                <div
+                    className="drag-handle"
+                    onPointerDown={(e) => dragControls.start(e)}
+                >
+                    <GripVertical size={20} className="text-gray-400" />
+                </div>
+                <div className="course-icon">
+                    <BookOpen size={20} />
+                </div>
+                <div className="course-details">
+                    <span className="course-name">{course.name}</span>
+                    <span className="course-type">{course.type}</span>
+                </div>
+
+                {manageMode && (
+                    <div className="course-actions" onClick={e => e.stopPropagation()}>
+                        <button
+                            className={`action-btn ${hiddenCourseIds.includes(course.id) ? 'show-btn' : 'hide-btn'}`}
+                            onClick={() => onToggleCourseVisibility(course.id)}
+                            title={hiddenCourseIds.includes(course.id) ? "Mostra corso" : "Nascondi corso"}
+                        >
+                            {hiddenCourseIds.includes(course.id) ? (
+                                <Eye size={18} className="opacity-50" />
+                            ) : (
+                                <EyeOff size={18} />
+                            )}
+                        </button>
+
+                        {course.type === 'Custom' ? (
+                            <button
+                                className="action-btn delete-btn"
+                                onClick={() => onRemoveCustomCourse(course.id)}
+                                title="Elimina corso"
+                            >
+                                <Trash2 size={18} />
+                            </button>
+                        ) : (
+                            <div className="action-btn" style={{ visibility: 'hidden', pointerEvents: 'none' }}>
+                                <Trash2 size={18} />
+                            </div>
+                        )}
+                    </div>
+                )}
+            </div>
+        </Reorder.Item>
+    );
+};
 const CourseSelector = ({
     selectedCourse,
     onCourseChange,
@@ -88,85 +159,55 @@ const CourseSelector = ({
         }
     };
 
-    const SortableCourseItem = ({ course, isReorderEnabled, onSelect, dragControls }) => {
-        return (
-            <div
-                className={`course-item ${selectedCourse?.id === course.id ? 'active' : ''} ${hiddenCourseIds.includes(course.id) ? 'hidden-item' : ''}`}
-                onClick={() => onSelect(course)}
-            >
-                {isReorderEnabled && (
-                    <div
-                        className="drag-handle"
-                        onPointerDown={(e) => dragControls.start(e)}
-                        style={{ touchAction: 'none' }}
-                    >
-                        <GripVertical size={20} className="text-gray-400" />
-                    </div>
-                )}
-                <div className="course-icon">
-                    <BookOpen size={20} />
+    const renderCourseItem = (course, isDraggable = false) => (
+        <div
+            className={`course-item ${selectedCourse?.id === course.id ? 'active' : ''} ${hiddenCourseIds.includes(course.id) ? 'hidden-item' : ''}`}
+            onClick={() => handleSelectCourse(course)}
+        >
+            {isDraggable && (
+                <div className="drag-handle" onPointerDown={(e) => e.preventDefault()}> {/* preventDefault prevents issues with touch scrolling/selection sometimes, though framer usually handles it. But standard practice for pure drag handles. */}
+                    <GripVertical size={20} className="text-gray-400" />
                 </div>
-                <div className="course-details">
-                    <span className="course-name">{course.name}</span>
-                    <span className="course-type">{course.type}</span>
-                </div>
-
-                {manageMode && (
-                    <div className="course-actions" onClick={e => e.stopPropagation()}>
-                        <button
-                            className={`action-btn ${hiddenCourseIds.includes(course.id) ? 'show-btn' : 'hide-btn'}`}
-                            onClick={() => onToggleCourseVisibility(course.id)}
-                            title={hiddenCourseIds.includes(course.id) ? "Mostra corso" : "Nascondi corso"}
-                        >
-                            {hiddenCourseIds.includes(course.id) ? (
-                                <Eye size={18} className="opacity-50" />
-                            ) : (
-                                <EyeOff size={18} />
-                            )}
-                        </button>
-
-                        {course.type === 'Custom' ? (
-                            <button
-                                className="action-btn delete-btn"
-                                onClick={() => onRemoveCustomCourse(course.id)}
-                                title="Elimina corso"
-                            >
-                                <Trash2 size={18} />
-                            </button>
-                        ) : (
-                            <div className="action-btn" style={{ visibility: 'hidden', pointerEvents: 'none' }}>
-                                <Trash2 size={18} />
-                            </div>
-                        )}
-                    </div>
-                )}
+            )}
+            <div className="course-icon">
+                <BookOpen size={20} />
             </div>
-        );
-    };
+            <div className="course-details">
+                <span className="course-name">{course.name}</span>
+                <span className="course-type">{course.type}</span>
+            </div>
 
-    const ReorderableCourseItem = ({ course }) => {
-        const dragControls = useDragControls();
+            {manageMode && (
+                <div className="course-actions" onClick={e => e.stopPropagation()}>
+                    <button
+                        className={`action-btn ${hiddenCourseIds.includes(course.id) ? 'show-btn' : 'hide-btn'}`}
+                        onClick={() => onToggleCourseVisibility(course.id)}
+                        title={hiddenCourseIds.includes(course.id) ? "Mostra corso" : "Nascondi corso"}
+                    >
+                        {hiddenCourseIds.includes(course.id) ? (
+                            <Eye size={18} className="opacity-50" />
+                        ) : (
+                            <EyeOff size={18} />
+                        )}
+                    </button>
 
-        return (
-            <Reorder.Item
-                key={course.id}
-                value={course}
-                className="reorder-item"
-                dragListener={false}
-                dragControls={dragControls}
-                style={{ position: 'relative' }}
-                transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                whileDrag={{ scale: 1.02, boxShadow: '0 8px 24px rgba(0,0,0,0.15)', zIndex: 999 }}
-            >
-                <SortableCourseItem
-                    course={course}
-                    isReorderEnabled={true}
-                    onSelect={handleSelectCourse}
-                    dragControls={dragControls}
-                />
-            </Reorder.Item>
-        );
-    };
+                    {course.type === 'Custom' ? (
+                        <button
+                            className="action-btn delete-btn"
+                            onClick={() => onRemoveCustomCourse(course.id)}
+                            title="Elimina corso"
+                        >
+                            <Trash2 size={18} />
+                        </button>
+                    ) : (
+                        <div className="action-btn" style={{ visibility: 'hidden', pointerEvents: 'none' }}>
+                            <Trash2 size={18} />
+                        </div>
+                    )}
+                </div>
+            )}
+        </div>
+    );
 
     return (
         <>
@@ -203,6 +244,7 @@ const CourseSelector = ({
                                         placeholder="Cerca il tuo corso..."
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
+                                        autoFocus
                                     />
                                 </div>
 
@@ -210,7 +252,16 @@ const CourseSelector = ({
                                     {isReorderEnabled ? (
                                         <Reorder.Group axis="y" values={filteredCourses} onReorder={handleReorder} className="reorder-group">
                                             {filteredCourses.map(course => (
-                                                <ReorderableCourseItem key={course.id} course={course} />
+                                                <DraggableCourseItem
+                                                    key={course.id}
+                                                    course={course}
+                                                    selectedCourse={selectedCourse}
+                                                    hiddenCourseIds={hiddenCourseIds}
+                                                    manageMode={manageMode}
+                                                    onSelectCourse={handleSelectCourse}
+                                                    onToggleCourseVisibility={onToggleCourseVisibility}
+                                                    onRemoveCustomCourse={onRemoveCustomCourse}
+                                                />
                                             ))}
                                         </Reorder.Group>
                                     ) : (
@@ -221,11 +272,7 @@ const CourseSelector = ({
                                                 onClick={() => handleSelectCourse(course)}
                                                 style={{ display: 'block', width: '100%', padding: 0, border: 'none', background: 'none', textAlign: 'left' }}
                                             >
-                                                <SortableCourseItem
-                                                    course={course}
-                                                    isReorderEnabled={false}
-                                                    onSelect={handleSelectCourse}
-                                                />
+                                                {renderCourseItem(course, false)}
                                             </button>
                                         ))
                                     )}
