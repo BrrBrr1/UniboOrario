@@ -88,9 +88,7 @@ const CourseSelector = ({
         }
     };
 
-    const SortableCourseItem = ({ course, isReorderEnabled, onSelect }) => {
-        const dragControls = useDragControls();
-
+    const SortableCourseItem = ({ course, isReorderEnabled, onSelect, dragControls }) => {
         return (
             <div
                 className={`course-item ${selectedCourse?.id === course.id ? 'active' : ''} ${hiddenCourseIds.includes(course.id) ? 'hidden-item' : ''}`}
@@ -146,6 +144,30 @@ const CourseSelector = ({
         );
     };
 
+    const ReorderableCourseItem = ({ course }) => {
+        const dragControls = useDragControls();
+
+        return (
+            <Reorder.Item
+                key={course.id}
+                value={course}
+                className="reorder-item"
+                dragListener={false}
+                dragControls={dragControls}
+                style={{ position: 'relative' }}
+                transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                whileDrag={{ scale: 1.02, boxShadow: '0 8px 24px rgba(0,0,0,0.15)', zIndex: 999 }}
+            >
+                <SortableCourseItem
+                    course={course}
+                    isReorderEnabled={true}
+                    onSelect={handleSelectCourse}
+                    dragControls={dragControls}
+                />
+            </Reorder.Item>
+        );
+    };
+
     return (
         <>
             <button
@@ -181,7 +203,6 @@ const CourseSelector = ({
                                         placeholder="Cerca il tuo corso..."
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
-                                        autoFocus
                                     />
                                 </div>
 
@@ -189,19 +210,7 @@ const CourseSelector = ({
                                     {isReorderEnabled ? (
                                         <Reorder.Group axis="y" values={filteredCourses} onReorder={handleReorder} className="reorder-group">
                                             {filteredCourses.map(course => (
-                                                <Reorder.Item
-                                                    key={course.id}
-                                                    value={course}
-                                                    className="reorder-item"
-                                                    dragListener={false}
-                                                    dragControls={undefined} /* We use internal drag controls in the child */
-                                                >
-                                                    <SortableCourseItem
-                                                        course={course}
-                                                        isReorderEnabled={true}
-                                                        onSelect={handleSelectCourse}
-                                                    />
-                                                </Reorder.Item>
+                                                <ReorderableCourseItem key={course.id} course={course} />
                                             ))}
                                         </Reorder.Group>
                                     ) : (

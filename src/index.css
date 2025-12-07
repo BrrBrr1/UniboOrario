@@ -2217,12 +2217,25 @@ body {
   flex-direction: column;
   gap: 0.25rem;
   width: 100%;
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
 
 .reorder-item {
   position: relative;
   list-style: none;
   background: transparent;
+  width: 100%;
+  z-index: 1;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+.reorder-item:active {
+  z-index: 999;
 }
 
 .drag-handle {
@@ -2235,6 +2248,8 @@ body {
   margin-right: -0.25rem;
   flex-shrink: 0;
   touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .drag-handle:active {
