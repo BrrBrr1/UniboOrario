@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Search, ChevronDown, BookOpen, Link as LinkIcon, X, Trash2, EyeOff, Eye, GripVertical } from 'lucide-react';
 import { Reorder, useDragControls } from 'framer-motion';
 import { courses } from '../data/courses';
@@ -115,6 +115,21 @@ const CourseSelector = ({
         window.addEventListener('keydown', handleEscape);
         return () => window.removeEventListener('keydown', handleEscape);
     }, []);
+
+    const inputRef = useRef(null);
+
+    // Filter focus to only desktop devices to avoid opening keyboard on mobile
+    useEffect(() => {
+        if (isOpen && !showCustomInput && inputRef.current) {
+            const isDesktop = window.matchMedia('(min-width: 768px)').matches;
+            if (isDesktop) {
+                // Small timeout to ensure element is ready
+                setTimeout(() => {
+                    inputRef.current?.focus();
+                }, 100);
+            }
+        }
+    }, [isOpen, showCustomInput]);
 
     const filteredCourses = orderedCourses.filter(course => {
         if (!manageMode && !searchTerm && hiddenCourseIds.includes(course.id)) return false;
@@ -240,11 +255,11 @@ const CourseSelector = ({
                                 <div className="search-bar-container">
                                     <Search size={18} className="search-icon" />
                                     <input
+                                        ref={inputRef}
                                         type="text"
                                         placeholder="Cerca il tuo corso..."
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
-                                        autoFocus
                                     />
                                 </div>
 
