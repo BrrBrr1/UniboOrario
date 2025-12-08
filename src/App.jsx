@@ -12,13 +12,14 @@ import LoadingSkeleton from './components/LoadingSkeleton';
 import LessonFilter from './components/LessonFilter';
 import { fetchTimetable } from './services/api';
 import SettingsModal from './components/SettingsModal';
+import NotesModal from './components/NotesModal';
 import useLocalStorage from './hooks/useLocalStorage';
 import { NotificationProvider, useNotification } from './context/NotificationContext';
 import NotificationContainer from './components/NotificationContainer';
 import useNetworkStatus from './hooks/useNetworkStatus';
 import usePWAUpdate from './hooks/usePWAUpdate';
 import useSwipe from './hooks/useSwipe';
-import { RotateCcw, Calendar } from 'lucide-react';
+import { RotateCcw, Calendar, Clock, WifiOff } from 'lucide-react';
 import { courses } from './data/courses';
 import './index.css';
 
@@ -77,6 +78,16 @@ function AppContent() {
   const [showWeekends, setShowWeekends] = useLocalStorage('preference_showWeekends', true);
   const [notificationsEnabled, setNotificationsEnabled] = useLocalStorage('preference_notifications', true);
   const [autoRefresh, setAutoRefresh] = useLocalStorage('preference_autoRefresh', false);
+
+  // Offline support state
+  const [lastUpdated, setLastUpdated] = useState(null);
+  const [isFromCache, setIsFromCache] = useState(false);
+
+  // Lesson notes
+  const [lessonNotes, setLessonNotes] = useLocalStorage('lesson_notes', {});
+  const [notesModalOpen, setNotesModalOpen] = useState(false);
+  const [selectedNoteKey, setSelectedNoteKey] = useState(null);
+  const [selectedEvent, setSelectedEvent] = useState(null);
 
   useNetworkStatus();
   usePWAUpdate();
@@ -192,7 +203,15 @@ function AppContent() {
 
         console.log('Fetching URL:', url); // For debugging
 
-        const data = await fetchTimetable(url);
+        const result = await fetchTimetable(url);
+        const { data, lastUpdated: updated, fromCache } = result;
+
+        setLastUpdated(updated);
+        setIsFromCache(fromCache);
+
+        if (fromCache) {
+          addNotification('info', 'Dati caricati dalla cache (offline)');
+        }
 
         const uniqueLessonsMap = new Map();
         data.forEach(event => {
@@ -287,7 +306,7 @@ function AppContent() {
 
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
 
       switch (e.key) {
         case 'ArrowLeft':
@@ -400,6 +419,22 @@ function AppContent() {
             filterType={filterType}
             onFilterTypeChange={setFilterType}
           />
+
+          {lastUpdated && (
+            <div className={`last-updated-indicator ${isFromCache ? 'offline' : ''}`}>
+              {isFromCache && <WifiOff size={14} />}
+              <Clock size={14} />
+              <span>
+                Ultimo aggiornamento: {new Date(lastUpdated).toLocaleString('it-IT', {
+                  day: '2-digit',
+                  month: '2-digit',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                })}
+              </span>
+              {isFromCache && <span className="offline-badge">Offline</span>}
+            </div>
+          )}
           {viewMode === 'day' && (
             <DayTabs
               currentDate={currentDate}
@@ -424,6 +459,12 @@ function AppContent() {
                   events={filteredEvents}
                   compactView={compactView}
                   use24Hour={use24Hour}
+                  notes={lessonNotes}
+                  onNoteClick={(event, noteKey) => {
+                    setSelectedEvent(event);
+                    setSelectedNoteKey(noteKey);
+                    setNotesModalOpen(true);
+                  }}
                 />
               ))
             ) : (
@@ -433,6 +474,12 @@ function AppContent() {
                 events={filteredEvents}
                 compactView={compactView}
                 use24Hour={use24Hour}
+                notes={lessonNotes}
+                onNoteClick={(event, noteKey) => {
+                  setSelectedEvent(event);
+                  setSelectedNoteKey(noteKey);
+                  setNotesModalOpen(true);
+                }}
               />
             )}
           </div>
@@ -466,6 +513,39 @@ function AppContent() {
         onNotificationsChange={setNotificationsEnabled}
         autoRefresh={autoRefresh}
         onAutoRefreshChange={setAutoRefresh}
+      />
+
+      <NotesModal
+        isOpen={notesModalOpen}
+        onClose={() => {
+          setNotesModalOpen(false);
+          setSelectedNoteKey(null);
+          setSelectedEvent(null);
+        }}
+        note={selectedNoteKey ? lessonNotes[selectedNoteKey] : ''}
+        lessonTitle={selectedEvent?.title || ''}
+        onSave={(content) => {
+          if (selectedNoteKey) {
+            if (content) {
+              setLessonNotes(prev => ({ ...prev, [selectedNoteKey]: content }));
+            } else {
+              setLessonNotes(prev => {
+                const updated = { ...prev };
+                delete updated[selectedNoteKey];
+                return updated;
+              });
+            }
+          }
+        }}
+        onDelete={() => {
+          if (selectedNoteKey) {
+            setLessonNotes(prev => {
+              const updated = { ...prev };
+              delete updated[selectedNoteKey];
+              return updated;
+            });
+          }
+        }}
       />
     </div>
   );
