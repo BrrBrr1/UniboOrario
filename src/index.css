@@ -2542,10 +2542,6 @@ body {
   align-items: center;
 }
 
-.event-card.has-note {
-  border-left-color: #f59e0b;
-}
-
 .event-note-preview {
   display: flex;
   align-items: flex-start;
