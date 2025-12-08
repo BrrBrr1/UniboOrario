@@ -556,6 +556,21 @@ body {
   width: 100%;
 }
 
+/* Desktop: Force all days in one row for week view */
+@media (min-width: 769px) {
+  .timetable-grid.week {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 1rem;
+  }
+
+  .timetable-grid.week .day-column {
+    flex: 1 1 0;
+    min-width: 0;
+    /* Allow shrinking below content size */
+  }
+}
+
 /* Day Column */
 .day-column {
   background-color: var(--card-bg);
