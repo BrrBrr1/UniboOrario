@@ -2352,9 +2352,13 @@ body {
 }
 
 /* ========================================
-   SHARE BUTTON
+   DAY STATS BUTTON & POPUP
    ======================================== */
-.share-button {
+.day-stats-container {
+  position: relative;
+}
+
+.stats-button {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2369,34 +2373,127 @@ body {
   flex-shrink: 0;
 }
 
-.share-button:hover {
+.stats-button:hover {
   background-color: var(--primary-color);
   color: white;
 }
 
-.share-button.loading {
-  opacity: 0.7;
-  cursor: not-allowed;
-}
-
-.share-button.success {
-  background-color: #10b981;
+.stats-button.active {
+  background-color: var(--primary-color);
   color: white;
 }
 
-.spinner-tiny {
-  width: 14px;
-  height: 14px;
-  border: 2px solid transparent;
-  border-top-color: currentColor;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
+.stats-popup {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 0.5rem;
+  background-color: var(--card-bg);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border-color);
+  z-index: 100;
+  min-width: 200px;
+  animation: fadeIn 0.15s ease-out;
+  overflow: hidden;
 }
 
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
+.stats-popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background-color: var(--bg-color);
+  border-bottom: 1px solid var(--border-color);
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text-main);
+}
+
+.stats-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border: none;
+  background: transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: all 0.15s;
+}
+
+.stats-close:hover {
+  background-color: var(--hover-bg);
+  color: var(--text-main);
+}
+
+.stats-popup-content {
+  padding: 0.75rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.stat-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.stat-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background-color: var(--bg-color);
+  border-radius: 8px;
+  color: var(--primary-color);
+  flex-shrink: 0;
+}
+
+.stat-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.stat-value {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--text-main);
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.stat-divider {
+  height: 1px;
+  background-color: var(--border-color);
+  margin: 0.25rem 0;
+}
+
+.stat-time-range {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  background-color: var(--bg-color);
+  border-radius: 8px;
+  font-size: 0.85rem;
+}
+
+.time-label {
+  color: var(--text-secondary);
+}
+
+.time-value {
+  font-weight: 600;
+  color: var(--text-main);
 }
 
 .day-header {

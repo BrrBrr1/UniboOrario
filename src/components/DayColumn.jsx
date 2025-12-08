@@ -1,9 +1,9 @@
-import React, { memo, useRef } from 'react';
+import React, { memo } from 'react';
 import { format, isSameDay, parseISO } from 'date-fns';
 import { it } from 'date-fns/locale';
 import { CalendarX } from 'lucide-react';
 import EventCard from './EventCard';
-import ShareButton from './ShareButton';
+import DayStats from './DayStats';
 
 const DayColumn = memo(({
     date,
@@ -13,22 +13,19 @@ const DayColumn = memo(({
     notes = {},
     onNoteClick
 }) => {
-    const columnRef = useRef(null);
-
     const dayEvents = events.filter(event => {
         const eventDate = parseISO(event.start);
         return isSameDay(eventDate, date);
     }).sort((a, b) => parseISO(a.start) - parseISO(b.start));
 
     const isToday = isSameDay(date, new Date());
-    const dayName = format(date, 'EEEE d MMMM', { locale: it });
 
     const getNoteKey = (event) => {
         return `${event.cod_modulo}_${format(date, 'yyyy-MM-dd')}`;
     };
 
     return (
-        <div className={`day-column ${isToday ? 'today' : ''}`} ref={columnRef}>
+        <div className={`day-column ${isToday ? 'today' : ''}`}>
             <div className="day-header">
                 <div className="day-header-left">
                     <span className="day-name">{format(date, 'EEEE', { locale: it })}</span>
@@ -37,7 +34,7 @@ const DayColumn = memo(({
                         <span className="day-month">{format(date, 'MMM', { locale: it })}</span>
                     </div>
                 </div>
-                <ShareButton targetRef={columnRef} dayName={dayName} />
+                <DayStats events={dayEvents} />
             </div>
             <div className="events-container">
                 {dayEvents.length > 0 ? (
